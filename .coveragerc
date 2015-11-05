@@ -1,0 +1,5 @@
+[run]
+source = dive_sailthru_client
+
+[report]
+omit = dive_sailthru_client/test*
