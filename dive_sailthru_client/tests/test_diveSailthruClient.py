@@ -16,7 +16,7 @@ class TestDiveSailthruClient(TestCase):
             {
                 'blast_id': 4889393,
                 'labels': ['Blast'],
-                'list': 'Utility Dive: Solar blast list',
+                'list': 'Utility Dive: Solar',
                 'name': 'ABB Survey recruitment-blast-UD Solar-Aug6',
                 'subject': 'Utilities: Is your grid secure?'
             },
@@ -42,6 +42,10 @@ class TestDiveSailthruClient(TestCase):
             },
             {
                 'subject': 'BREAKING the law'
+            },
+            {
+                'blast_id': 1234,
+                'list': 'Utility Dive: Solar blast list',
             }
         ]
 
@@ -51,7 +55,8 @@ class TestDiveSailthruClient(TestCase):
             DiveEmailTypes.Newsletter,
             DiveEmailTypes.Weekender,
             DiveEmailTypes.Unknown,
-            DiveEmailTypes.BreakingNews
+            DiveEmailTypes.BreakingNews,
+            DiveEmailTypes.Blast,
         ]
 
         for index, input in enumerate(inputs):
