@@ -14,3 +14,6 @@ build/
 .coverage
 .tox
 .eggs/
+
+# PyCharm
+.idea/*
