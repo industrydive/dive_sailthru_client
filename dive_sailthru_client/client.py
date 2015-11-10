@@ -1,10 +1,43 @@
 from sailthru.sailthru_client import SailthruClient
+from sailthru.sailthru_response import SailthruResponse, SailthruResponseError
 from errors import SailthruApiError
 import datetime
 
-# TODO: enforce structure on returned dicts -- make all keys present even if
+# TODO: enforce structure on ALL returned dicts -- make all keys present even if
 # value is zero. Maybe replace with class.
 
+
+def merge_results(result_json, defaults):
+    """
+    Merge the dictionary results of a sailthru api response with sensible defaults
+    Recurses through dictionaries
+
+    :param result_json: resp.json
+    :param defaults: a dictionary to set the nonexistant keys in resp.json to. Also sets values of None
+    :return: clean json with all the keys in result_json and defaults, and no None values (unless they come from defaults)
+    """
+    results = {}
+
+    for k, v in defaults.items():
+        if type(v) == dict:
+            old_val = result_json.get(k, {})
+            if old_val and v:
+                new_val = merge_results(old_val, v)
+            elif old_val:
+                new_val = old_val
+            else:
+                new_val = v
+        else:
+            new_val = result_json.get(k, v)
+
+        results[k] = new_val
+
+    # If our defaults missed anything, fix it here
+    for k, v in result_json.items():
+        if k not in results:
+            results[k] = v
+
+    return results
 
 class DiveEmailTypes:
     """
@@ -297,3 +330,62 @@ class DiveSailthruClient(SailthruClient):
         self.raise_exception_if_error(result)
         data = result.json
         return data
+
+
+class DiveSailthruClientSafe(DiveSailthruClient):
+
+    def _user_dict(self):
+        """
+        defaults for get_user api call
+        :return:
+        """
+        return {
+            "keys": {
+                "sid": "",
+                "cookie": "",
+                "email": ""
+            },
+            "activity": "",
+            "vars": {},
+            "lists": {},
+            "engagement": "",
+            "optout_email": ""
+        }
+
+    def _create_response(self, base_response, defaults):
+        return DiveSailthruClientSafe._create_response(base_response, defaults)
+
+    @staticmethod
+    def _create_response(base_response, defaults):
+        """
+        Creates a SailthruResponse with nice json from a SailthruResponse object.
+        Throws SailthruApiError if response is not ok (if not resp.is_ok())
+
+        :param base_response: the SailthruApiError object
+        :param defaults: a dictionary to clean the json with, see merge_results
+        :return:
+        """
+        if not base_response.is_ok():
+            err = base_response.get_error()
+            raise SailthruApiError("%s (%s)" % (err.message, err.code))            
+
+        #TODO: This is bad
+        if not base_response.json:
+            base_response.json = defaults
+            return base_response
+
+        new_json = merge_results(base_response.json, defaults)
+
+        base_response.json = new_json
+
+        return base_response
+            
+    def get_user(self, idvalue, options=None):
+        """
+        get user by a given id
+        http://getstarted.sailthru.com/api/user
+        """
+        base_response = super(DiveSailthruClientSafe, self).get_user(idvalue, options)
+        defaults = self._user_dict()
+        return self._create_response(base_response, defaults)
+
