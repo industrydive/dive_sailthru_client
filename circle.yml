@@ -12,3 +12,9 @@ test:
   override:
     - make pythonqa
     - make test
+
+deployment:
+  production:
+    branch: master
+    commands:
+      - git tag -a v$(python setup.py --version) -m 'CircleCI tagged release' && git push --tags
