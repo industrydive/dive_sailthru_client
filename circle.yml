@@ -1,0 +1,14 @@
+machine:
+  python:
+    version: "2.7.11"
+  services:
+    - docker
+
+dependencies:
+  override:
+    - docker info
+
+test:
+  override:
+    - make pythonqa
+    - make test
