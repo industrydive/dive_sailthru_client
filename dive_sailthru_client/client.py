@@ -26,6 +26,15 @@ class DiveSailthruClient(SailthruClient):
     campaigns.
     """
 
+    def get_primary_lists(self):
+        """
+        Return list data about all lists marked as primary.
+
+        :return: A list of sailthru list data dicts.
+        :rtype: list[dict]
+        """
+        return self.api_get('list', {"primary": 1}).json['lists']
+
     def _infer_dive_email_type(self, campaign):
         """
         Industry Dive specific function to try to figure out how to
@@ -62,6 +71,7 @@ class DiveSailthruClient(SailthruClient):
             or None.
         """
         import re
+
         list = campaign.get('list', '')
         if list.lower().endswith("blast list"):
             return re.sub(r' [Bb]last [Ll]ist$', '', list)
@@ -88,6 +98,10 @@ class DiveSailthruClient(SailthruClient):
         only sent to a named list. In addition to data returned from sailthru
         api, adds additional fields dive_email_type and dive_brand to each
         campaign.
+
+        THIS USES THE 'blast' API endpoint, calling based on status and date (this
+        returns different data than calling the 'blast' endpoint for a single campaign).
+
         :param start_date: date or datetime
         :param end_date: date or datetime
         :param list_name: Optionally limit results to sends to one named list.
@@ -129,8 +143,8 @@ class DiveSailthruClient(SailthruClient):
         page_size_in_days = 30
         page_start_date = start_date
         while page_start_date < end_date:
-            page_end_date = page_start_date + \
-                datetime.timedelta(days=page_size_in_days)
+            page_end_date = \
+                page_start_date + datetime.timedelta(days=page_size_in_days)
             if page_end_date > end_date:
                 page_end_date = end_date  # Don't go past the request end_date.
 
@@ -297,3 +311,19 @@ class DiveSailthruClient(SailthruClient):
         self.raise_exception_if_error(result)
         data = result.json
         return data
+
+    def api_post(self, *args, **kwargs):
+        """
+        Wrapper around api_post to raise exception if there is any problem.
+        """
+        response = super(DiveSailthruClient, self).api_post(*args, **kwargs)
+        self.raise_exception_if_error(response)
+        return response
+
+    def api_get(self, *args, **kwargs):
+        """
+        Wrapper around api_get to raise exception if there is any problem.
+        """
+        response = super(DiveSailthruClient, self).api_get(*args, **kwargs)
+        self.raise_exception_if_error(response)
+        return response
