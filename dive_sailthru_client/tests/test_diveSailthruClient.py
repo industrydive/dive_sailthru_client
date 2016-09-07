@@ -2,8 +2,10 @@ from unittest import TestCase
 from dive_sailthru_client.client import DiveSailthruClient, DiveEmailTypes
 from dive_sailthru_client.errors import SailthruApiError
 from mock import MagicMock, patch
+from nose.plugins.attrib import attr
 
 
+@attr('unittest')
 class TestDiveSailthruClient(TestCase):
 
     def setUp(self):
@@ -11,11 +13,15 @@ class TestDiveSailthruClient(TestCase):
         self.sailthru_client = DiveSailthruClient(sailthru_client=mock_sailthru_client)
 
     def test__infer_dive_email_type(self):
+        """
+        Test that we can guess the dive email type from the mailing.
+        :return:
+        """
         inputs = [
             {
                 'blast_id': 4889393,
                 'labels': ['Blast'],
-                'list': 'Utility Dive: Solar',
+                'list': 'Utility Dive: Solar blast list',
                 'name': 'ABB Survey recruitment-blast-UD Solar-Aug6',
                 'subject': 'Utilities: Is your grid secure?'
             },
@@ -41,10 +47,6 @@ class TestDiveSailthruClient(TestCase):
             },
             {
                 'subject': 'BREAKING the law'
-            },
-            {
-                'blast_id': 1234,
-                'list': 'Utility Dive: Solar blast list',
             }
         ]
 
@@ -54,8 +56,7 @@ class TestDiveSailthruClient(TestCase):
             DiveEmailTypes.Newsletter,
             DiveEmailTypes.Weekender,
             DiveEmailTypes.Unknown,
-            DiveEmailTypes.BreakingNews,
-            DiveEmailTypes.Blast,
+            DiveEmailTypes.BreakingNews
         ]
 
         for index, input in enumerate(inputs):
@@ -63,6 +64,10 @@ class TestDiveSailthruClient(TestCase):
             self.assertEqual(output, expected[index])
 
     def test__infer_dive_brand(self):
+        """
+        Test that we can guess the dive brand from the mailing.
+        :return:
+        """
 
         inputs = [
             'This is a Blast List',
@@ -99,6 +104,13 @@ class TestDiveSailthruClient(TestCase):
     @patch('sailthru.sailthru_response.SailthruResponse')
     @patch('sailthru.sailthru_response.SailthruResponseError')
     def test_raise_exception_if_error(self, mock_response, mock_error):
+        """
+        Test that an exception is raised on a sailthru error.
+
+        :param mock_response:
+        :param mock_error:
+        :return:
+        """
         mock_response.is_ok.return_value = True
         self.sailthru_client.raise_exception_if_error(mock_response)
         self.assertTrue(mock_response.is_ok.called)
