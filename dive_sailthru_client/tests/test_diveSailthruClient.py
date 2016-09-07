@@ -1,15 +1,14 @@
 from unittest import TestCase
 from dive_sailthru_client.client import DiveSailthruClient, DiveEmailTypes
 from dive_sailthru_client.errors import SailthruApiError
-import mock
-
-__author__ = 'david'
+from mock import MagicMock, patch
 
 
 class TestDiveSailthruClient(TestCase):
 
     def setUp(self):
-        self.sailthru_client = DiveSailthruClient('abcd', 'efgh')
+        mock_sailthru_client = MagicMock()
+        self.sailthru_client = DiveSailthruClient(sailthru_client=mock_sailthru_client)
 
     def test__infer_dive_email_type(self):
         inputs = [
@@ -97,10 +96,9 @@ class TestDiveSailthruClient(TestCase):
             output = self.sailthru_client._infer_dive_brand({'list': input})
             self.assertEqual(output, expected[index])
 
-    @mock.patch('sailthru.sailthru_response.SailthruResponse')
-    @mock.patch('sailthru.sailthru_response.SailthruResponseError')
+    @patch('sailthru.sailthru_response.SailthruResponse')
+    @patch('sailthru.sailthru_response.SailthruResponseError')
     def test_raise_exception_if_error(self, mock_response, mock_error):
-
         mock_response.is_ok.return_value = True
         self.sailthru_client.raise_exception_if_error(mock_response)
         self.assertTrue(mock_response.is_ok.called)
@@ -116,8 +114,8 @@ class TestDiveSailthruClient(TestCase):
         self.assertEqual(cm.exception.message, 'this is the error (1234)')
         self.assertTrue(mock_response.get_error.called)
 
-    @mock.patch('dive_sailthru_client.client.DiveSailthruClient')
-    @mock.patch('sailthru.sailthru_response.SailthruResponse')
+    @patch('dive_sailthru_client.client.DiveSailthruClient')
+    @patch('sailthru.sailthru_response.SailthruResponse')
     def test_get_campaigns_in_range(self, mock_response, mock_client):
         # TODO
         # mock_response.is_ok.return_value = True

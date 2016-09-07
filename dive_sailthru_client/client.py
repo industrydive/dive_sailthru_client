@@ -18,13 +18,30 @@ class DiveEmailTypes:
     BreakingNews = "breaking"
 
 
-class DiveSailthruClient(SailthruClient):
+class DiveSailthruClient(object):
     """
     Our Sailthru client implementation that adds our own concepts.
 
     This includes dive brand, dive email type, and easier ways to query
     campaigns.
     """
+
+    def __init__(self, api_key=None, api_secret=None, sailthru_client=None):
+        """
+        Set up the sailthru client using composition.
+
+        :param api_key:
+        :param api_secret:
+        :param sailthru_client:
+        """
+        if sailthru_client is None:
+            if api_key is None:
+                raise ValueError('Sailthru API key not provided.')
+            elif api_secret is None:
+                raise ValueError('Sailthru API secret not provided.')
+            sailthru_client = SailthruClient(api_key, api_secret)
+
+        self.sailthru_client = sailthru_client
 
     def get_primary_lists(self):
         """
@@ -60,6 +77,7 @@ class DiveSailthruClient(SailthruClient):
             return DiveEmailTypes.Blast
         if subject.startswith("BREAKING"):
             return DiveEmailTypes.BreakingNews
+
         return DiveEmailTypes.Unknown
 
     def _infer_dive_brand(self, campaign):
@@ -80,6 +98,7 @@ class DiveSailthruClient(SailthruClient):
         if list.endswith(" Dive") or \
                 re.match(r'[A-Za-z]+ Dive: [a-zA-Z]+', list):
             return list
+
         return None
 
     def raise_exception_if_error(self, response):
@@ -156,8 +175,9 @@ class DiveSailthruClient(SailthruClient):
             }
             if list_name is not None:
                 api_params['list'] = list_name
+
             result = self.api_get('blast', api_params)
-            self.raise_exception_if_error(result)
+
             data = result.json
             # We reverse the results to keep everything in ascending
             # chronological order.
@@ -170,6 +190,7 @@ class DiveSailthruClient(SailthruClient):
                 campaigns.append(c)
 
             page_start_date = page_end_date
+
         return campaigns
 
     def get_campaign_stats(self, blast_id, include_clickmap=False,
@@ -259,8 +280,10 @@ class DiveSailthruClient(SailthruClient):
             options['subject'] = '1'
         if include_urls:
             options['urls'] = '1'
+
         result = self.stats_blast(blast_id=blast_id, options=options)
         self.raise_exception_if_error(result)
+
         return result.json
 
     def get_campaign_data(self, blast_id):
@@ -308,22 +331,23 @@ class DiveSailthruClient(SailthruClient):
         result = self.api_get('blast', {
             'blast_id': blast_id,
         })
-        self.raise_exception_if_error(result)
-        data = result.json
-        return data
+
+        return result.json
 
     def api_post(self, *args, **kwargs):
         """
         Wrapper around api_post to raise exception if there is any problem.
         """
-        response = super(DiveSailthruClient, self).api_post(*args, **kwargs)
+        response = self.sailthru_client.api_post(*args, **kwargs)
         self.raise_exception_if_error(response)
+
         return response
 
     def api_get(self, *args, **kwargs):
         """
         Wrapper around api_get to raise exception if there is any problem.
         """
-        response = super(DiveSailthruClient, self).api_get(*args, **kwargs)
+        response = self.sailthru_client.api_get(*args, **kwargs)
         self.raise_exception_if_error(response)
+
         return response
