@@ -1,8 +1,8 @@
 from setuptools import setup
 
 setup(
-    name = "dive_sailthru_client",
-    version = "0.0.1",
+    name="dive_sailthru_client",
+    version="0.0.2",
     description="Industry Dive abstraction of the Sailthru API client",
     author='David Barbarisi',
     author_email='dbarbarisi@industrydive.com',

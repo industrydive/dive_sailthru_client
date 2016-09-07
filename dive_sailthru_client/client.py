@@ -126,11 +126,11 @@ class DiveSailthruClient(SailthruClient):
         # numbers of campaigns, so we somewhat arbitrarily break down requests
         # for "large" date ranges to multiple API requests and then stitch them
         # together in this function.
-        PAGE_SIZE_IN_DAYS = 30
+        page_size_in_days = 30
         page_start_date = start_date
         while page_start_date < end_date:
             page_end_date = page_start_date + \
-                datetime.timedelta(days=PAGE_SIZE_IN_DAYS)
+                datetime.timedelta(days=page_size_in_days)
             if page_end_date > end_date:
                 page_end_date = end_date  # Don't go past the request end_date.
 

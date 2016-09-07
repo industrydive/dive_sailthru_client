@@ -105,7 +105,6 @@ class TestDiveSailthruClient(TestCase):
         self.sailthru_client.raise_exception_if_error(mock_response)
         self.assertTrue(mock_response.is_ok.called)
 
-
         mock_error.message = 'this is the error'
         mock_error.code = 1234
         mock_response.is_ok.return_value = False
@@ -142,7 +141,6 @@ class TestDiveSailthruClient(TestCase):
         # self.assertEqual(campaigns[0].dive_brand, 'the brand')
 
         self.fail()
-
 
     def test_get_campaign_stats(self):
         self.fail()
