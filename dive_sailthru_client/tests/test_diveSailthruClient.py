@@ -151,9 +151,12 @@ class TestDiveSailthruClient(TestCase):
         # self.assertEqual(campaigns[0].dive_brand, 'the brand')
 
         # self.fail()
+        pass
 
     def test_get_campaign_stats(self):
         # self.fail()
+        pass
 
     def test_get_campaign_data(self):
         # self.fail()
+        pass
