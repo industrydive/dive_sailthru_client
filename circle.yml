@@ -17,4 +17,4 @@ deployment:
   production:
     branch: master
     commands:
-      - git tag -a v$(python setup.py --version) -m 'CircleCI tagged release' && git push --tags
+      - git config user.email "tech.team@industrydive.com" && git config user.name "Robert Dive" && git tag -a v$(python setup.py --version) -m "$CIRCLE_BUILD_URL" && git push --tags
