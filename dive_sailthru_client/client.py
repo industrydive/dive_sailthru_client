@@ -56,24 +56,27 @@ class DiveSailthruClient(object):
         """
         Industry Dive specific function to try to figure out how to
         categorize a given campaign/blast in terms we understand.
-        :param campaign: a dict representing metadata for one email send
-            ("blast" in Sailthru langauge)
-        :return: a string that corresponds to one of the DiveEmailTypes options
+
+        :param dict campaign: A dict representing metadata for one email send
+            ("blast" in Sailthru langauge).
+        :return: A string that corresponds to one of the DiveEmailTypes
+            options.
+        :rtype: string
         """
         labels = campaign.get('labels', [])
         name = campaign.get('name', '')
-        list = campaign.get('list', '')
+        list_name = campaign.get('list', '')
         subject = campaign.get('subject', '').encode('utf-8', errors='replace')
         if "Blast" in labels or '-blast-' in name:
             return DiveEmailTypes.Blast
         if "Welcome Series" in labels:
             return DiveEmailTypes.WelcomeSeries
-        if list.endswith("Weekender") or \
+        if list_name.endswith("Weekender") or \
                 name.startswith("Newsletter Weekly Roundup"):
             return DiveEmailTypes.Weekender
         if "newsletter" in labels or name.startswith("Issue: "):
             return DiveEmailTypes.Newsletter
-        if list.lower().endswith("blast list"):
+        if list_name.lower().endswith("blast list"):
             return DiveEmailTypes.Blast
         if subject.startswith("BREAKING"):
             return DiveEmailTypes.BreakingNews
@@ -84,20 +87,21 @@ class DiveSailthruClient(object):
         """
         Guesses the Dive newsletter brand.
 
-        :param campaign: dict of campaign metadata
+        :param dict campaign: A dict of campaign metadata.
         :return: String representing main Dive name (like "Healthcare Dive")
             or None.
+        :rtype: string|None
         """
         import re
 
-        list = campaign.get('list', '')
-        if list.lower().endswith("blast list"):
-            return re.sub(r' [Bb]last [Ll]ist$', '', list)
-        if list.lower().endswith("weekender"):
-            return re.sub(r' [Ww]eekender$', '', list)
-        if list.endswith(" Dive") or \
-                re.match(r'[A-Za-z]+ Dive: [a-zA-Z]+', list):
-            return list
+        list_name = campaign.get('list', '')
+        if list_name.lower().endswith("blast list"):
+            return re.sub(r' [Bb]last [Ll]ist$', '', list_name)
+        if list_name.lower().endswith("weekender"):
+            return re.sub(r' [Ww]eekender$', '', list_name)
+        if list_name.endswith(" Dive") or \
+                re.match(r'[A-Za-z]+ Dive: [a-zA-Z]+', list_name):
+            return list_name
 
         return None
 
