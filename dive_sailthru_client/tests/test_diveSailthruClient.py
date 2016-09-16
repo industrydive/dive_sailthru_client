@@ -1,7 +1,7 @@
 from unittest import TestCase
 from dive_sailthru_client.client import DiveSailthruClient, DiveEmailTypes
 from dive_sailthru_client.errors import SailthruApiError
-from mock import MagicMock, patch
+from mock import patch
 from nose.plugins.attrib import attr
 
 
