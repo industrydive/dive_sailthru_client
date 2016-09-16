@@ -18,30 +18,13 @@ class DiveEmailTypes:
     BreakingNews = "breaking"
 
 
-class DiveSailthruClient(object):
+class DiveSailthruClient(SailthruClient):
     """
     Our Sailthru client implementation that adds our own concepts.
 
     This includes dive brand, dive email type, and easier ways to query
     campaigns.
     """
-
-    def __init__(self, api_key=None, api_secret=None, sailthru_client=None):
-        """
-        Set up the sailthru client using composition.
-
-        :param api_key:
-        :param api_secret:
-        :param sailthru_client:
-        """
-        if sailthru_client is None:
-            if api_key is None:
-                raise ValueError('Sailthru API key not provided.')
-            elif api_secret is None:
-                raise ValueError('Sailthru API secret not provided.')
-            sailthru_client = SailthruClient(api_key, api_secret)
-
-        self.sailthru_client = sailthru_client
 
     def get_primary_lists(self):
         """
@@ -342,7 +325,7 @@ class DiveSailthruClient(object):
         """
         Wrapper around api_post to raise exception if there is any problem.
         """
-        response = self.sailthru_client.api_post(*args, **kwargs)
+        response = super(DiveSailthruClient, self).api_post(*args, **kwargs)
         self.raise_exception_if_error(response)
 
         return response
@@ -351,7 +334,7 @@ class DiveSailthruClient(object):
         """
         Wrapper around api_get to raise exception if there is any problem.
         """
-        response = self.sailthru_client.api_get(*args, **kwargs)
+        response = super(DiveSailthruClient, self).api_get(*args, **kwargs)
         self.raise_exception_if_error(response)
 
         return response

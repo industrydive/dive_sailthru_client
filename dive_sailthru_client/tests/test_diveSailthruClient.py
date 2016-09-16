@@ -9,8 +9,7 @@ from nose.plugins.attrib import attr
 class TestDiveSailthruClient(TestCase):
 
     def setUp(self):
-        mock_sailthru_client = MagicMock()
-        self.sailthru_client = DiveSailthruClient(sailthru_client=mock_sailthru_client)
+        self.sailthru_client = DiveSailthruClient('abc', 'def')
 
     def test__infer_dive_email_type(self):
         """
