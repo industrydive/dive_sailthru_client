@@ -1,7 +1,7 @@
 from unittest import TestCase
 from dive_sailthru_client.client import DiveSailthruClient, DiveEmailTypes
 from dive_sailthru_client.errors import SailthruApiError
-from mock import MagicMock, patch
+from mock import patch
 from nose.plugins.attrib import attr
 
 
@@ -9,8 +9,7 @@ from nose.plugins.attrib import attr
 class TestDiveSailthruClient(TestCase):
 
     def setUp(self):
-        mock_sailthru_client = MagicMock()
-        self.sailthru_client = DiveSailthruClient(sailthru_client=mock_sailthru_client)
+        self.sailthru_client = DiveSailthruClient('abc', 'def')
 
     def test__infer_dive_email_type(self):
         """
