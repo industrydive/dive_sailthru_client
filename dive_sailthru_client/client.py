@@ -52,7 +52,7 @@ class DiveSailthruClient(SailthruClient):
             )
             return True
         except SailthruApiError as error:
-            return "User not found" in error.api_error_message
+            return not ("User not found" in error.api_error_message)
 
     def _infer_dive_email_type(self, campaign):
         """
