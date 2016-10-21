@@ -10,3 +10,11 @@ class SailthruApiError(SailthruClientError):
     """
     # TODO: add accessor for response_error object
     pass
+
+    def __init__(self, *args, **kwargs):
+        super(SailthruApiError, self).__init__(*args, **kwargs)
+
+        self.api_error_code = kwargs.get('api_error_code', 0)
+        self.api_error_message = kwargs.get('api_error_message', '')
+
+

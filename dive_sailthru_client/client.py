@@ -95,7 +95,9 @@ class DiveSailthruClient(SailthruClient):
         if not response.is_ok():
             api_error = response.get_error()
             raise SailthruApiError(
-                "%s (%s)" % (api_error.message, api_error.code)
+                "%s (%s)" % (api_error.message, api_error.code),
+                api_error_code = api_error.code,
+                api_error_message = api_error.message
             )
 
     def get_campaigns_in_range(self, start_date, end_date, list_name=None):
