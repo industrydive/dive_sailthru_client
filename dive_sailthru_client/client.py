@@ -35,6 +35,25 @@ class DiveSailthruClient(SailthruClient):
         """
         return self.api_get('list', {"primary": 1}).json['lists']
 
+    def user_exists(self, email):
+        """
+        See if an email exists in sailthru's database.
+
+        :param email: the email to check for
+        :return: False if sailthru cannot find the user, True otherwise
+        """
+        try:
+            result = self.get_user(
+                idvalue=email,
+                options={
+                    "key": "email",
+                    "keys": {"email": email},
+                },
+            )
+            return True
+        except SailthruApiError as error:
+            return "User not found" in error.api_error_message
+
     def _infer_dive_email_type(self, campaign):
         """
         Industry Dive specific function to try to figure out how to
