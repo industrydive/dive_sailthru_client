@@ -11,6 +11,95 @@ class TestDiveSailthruClient(TestCase):
     def setUp(self):
         self.sailthru_client = DiveSailthruClient('abc', 'def')
 
+    def test_infer_dive_email_type_and_brand(self):
+        test_cases = [
+            {
+                'input': {
+                    'blast_id': 9354623,
+                    'email_count': 22134,
+                    'labels': ['Mobile Marketer', 'daily-newsletter', 'newsletter'],
+                    'list': 'Mobile Marketer',
+                    'mode': 'email',
+                    'modify_time': 'Mon, 10 Apr 2017 11:03:45 -0400',
+                    'name': 'Issue: 2017-04-10 Mobile Marketer [issue:9825]',
+                    'public_url': 'link.mobilemarketer.com/public/9354623',
+                    'schedule_time': 'Mon, 10 Apr 2017 11:18:45 -0400',
+                    'sent_count': 22134,
+                    'start_time': 'Mon, 10 Apr 2017 11:19:01 -0400',
+                    'status': 'sent',
+                    'subject': "Apr. 10 -  How video glues together branding, direct response: Snapchat's Bitmoji is most downloaded app"
+                },
+                'expected_type': DiveEmailTypes.Newsletter,
+                'expected_brand': 'Mobile Marketer',
+                'comment': 'MM newsletter',
+            },
+            {
+                'input':  {
+                    'blast_id': 9344866,
+                    'data_feed_url': 'http://feed.sailthru.com/ws/feed?id=58d3f044ade9c205068b4569',
+                    'email_count': 22014,
+                    'email_hour_range': 8,
+                    'labels': ['Mobile Marketer', 'newsletter', 'weekender-newsletter'],
+                    'list': 'Mobile Marketer Weekender',
+                    'mode': 'email',
+                    'modify_time': 'Sat, 08 Apr 2017 10:00:47 -0400',
+                    'name': 'Newsletter Weekly Roundup: Mobile Marketer 04-08-2017',
+                    'public_url': 'link.mobilemarketer.com/public/9344866',
+                    'schedule_time': 'Sat, 08 Apr 2017 11:00:47 -0400',
+                    'sent_count': 22014,
+                    'start_time': 'Sat, 08 Apr 2017 11:01:02 -0400',
+                    'status': 'sent',
+                    'subject': 'Weekender: {{top_stories[0].title}}',
+                },
+                'expected_brand': 'Mobile Marketer',
+                'expected_type': DiveEmailTypes.Weekender,
+                'comment': 'MM weekender',
+            },
+            {
+                'input': {
+                    'blast_id': 9318162,
+                    'dive_brand': 'Mobile Marketer',
+                    'dive_email_type': 'blast',
+                    'email_count': 25339,
+                    'labels': ['Blast'],
+                    'list': 'Mobile Marketer Blast List',
+                    'mode': 'email',
+                    'modify_time': 'Thu, 06 Apr 2017 09:20:43 -0400',
+                    'modify_user': 'xxx@industrydive.com',
+                    'name': 'Vibes-0060L00000jG8MGQA0-Blast-MobileMarketer-April6',
+                    'public_url': 'link.divenewsletter.com/public/9318162',
+                    'schedule_time': 'Thu, 06 Apr 2017 09:27:00 -0400',
+                    'sent_count': 25339,
+                    'start_time': 'Thu, 06 Apr 2017 09:27:01 -0400',
+                    'status': 'sent',
+                    'subject': 'Vibes brings you mobile consumer preference data for 2017',
+                    'suppress_list': []
+                },
+                'expected_brand': 'Mobile Marketer',
+                'expected_type': DiveEmailTypes.Blast,
+                'comment': 'MM Email Blast',
+            }
+        ]
+
+        for test_case in test_cases:
+            actual_email_type = self.sailthru_client._infer_dive_email_type(test_case['input'])
+            self.assertEqual(
+                actual_email_type,
+                test_case['expected_type'],
+                "dive_email_type '%s' != '%s' while testing '%s'" % 
+                    (actual_email_type, test_case['expected_type'], test_case['comment'])
+            )
+            actual_brand = self.sailthru_client._infer_dive_brand(test_case['input'])
+            self.assertEqual(
+                actual_brand,
+                test_case['expected_brand'],
+                "dive_brand '%s' != '%s' while testing '%s'" % 
+                    (actual_brand, test_case['expected_brand'], test_case['comment'])
+
+            )
+
+            
+
     def test__infer_dive_email_type(self):
         """
         Test that we can guess the dive email type from the mailing.
