@@ -11,7 +11,7 @@ class TestDiveSailthruClient(TestCase):
     def setUp(self):
         self.sailthru_client = DiveSailthruClient('abc', 'def')
 
-    def test_infer_dive_email_type_and_brand(self):
+    def test_infer_dive_email_type_and_brand_real_examples(self):
         test_cases = [
             {
                 'input': {
@@ -27,7 +27,8 @@ class TestDiveSailthruClient(TestCase):
                     'sent_count': 22134,
                     'start_time': 'Mon, 10 Apr 2017 11:19:01 -0400',
                     'status': 'sent',
-                    'subject': "Apr. 10 -  How video glues together branding, direct response: Snapchat's Bitmoji is most downloaded app"
+                    'subject': ("Apr. 10 -  How video glues together branding, direct response:"
+                                " Snapchat's Bitmoji is most downloaded app")
                 },
                 'expected_type': DiveEmailTypes.Newsletter,
                 'expected_brand': 'Mobile Marketer',
@@ -58,8 +59,6 @@ class TestDiveSailthruClient(TestCase):
             {
                 'input': {
                     'blast_id': 9318162,
-                    'dive_brand': 'Mobile Marketer',
-                    'dive_email_type': 'blast',
                     'email_count': 25339,
                     'labels': ['Blast'],
                     'list': 'Mobile Marketer Blast List',
@@ -78,20 +77,91 @@ class TestDiveSailthruClient(TestCase):
                 'expected_brand': 'Mobile Marketer',
                 'expected_type': DiveEmailTypes.Blast,
                 'comment': 'MM Email Blast',
+            },
+            {
+                'input': {
+                    'blast_id': 9238319,
+                    'copy_template': 'welcome_construction_tech_4A',
+                    'data_feed_url': 'http://feed.sailthru.com/ws/feed?id=546b70c81092031f7b04e8c0',
+                    'email_count': 3,
+                    'email_hour_range': 2,
+                    'labels': ['Construction', 'Welcome Series'],
+                    'list': 'Construction: Tech Welcome 120 Days ACTIVE',
+                    'mode': 'email',
+                    'modify_time': 'Sat, 25 Mar 2017 10:00:05 -0400',
+                    'modify_user': 'xxx@industrydive.com',
+                    'name': 'Construction: Tech 120 Days Active 2017-03-25',
+                    'schedule_time': 'Sat, 25 Mar 2017 10:00:04 -0400',
+                    'sent_count': 2,
+                    'start_time': 'Sat, 25 Mar 2017 10:01:01 -0400',
+                    'status': 'sent',
+                    'subject': 'Question: Construction Dive: Tech',
+                    'suppress_list': ['Suppression: have NOT opened or clicked or viewed page in last 28 days']
+                },
+                # 'expected_brand': 'Construction Dive: Tech',  # doesn't work!
+                'expected_type': DiveEmailTypes.WelcomeSeries,
+                'comment': 'CD:Tech Welcome Series',
+            },
+            {
+                'input': {
+                    'blast_id': 4069224,
+                    'copy_template': 'welcome_healthcare_it_2B',
+                    'data_feed_url': 'http://feed.sailthru.com/ws/feed?id=546f7257109203ec1470cec1',
+                    'email_count': 10,
+                    'email_hour_range': 4,
+                    'labels': ['Healthcare', 'Welcome Series'],
+                    'list': 'Health: IT Welcome 30 Days',
+                    'mode': 'email',
+                    'modify_time': 'Wed, 25 Mar 2015 10:00:42 -0400',
+                    'modify_user': 'xxx@industrydive.com',
+                    'name': 'Health: IT 30 days Inactive 2015-03-25',
+                    'schedule_time': 'Wed, 25 Mar 2015 10:00:42 -0400',
+                    'sent_count': 3,
+                    'start_time': 'Wed, 25 Mar 2015 10:01:05 -0400',
+                    'stats': {'total': {'beacon_noclick': 1, 'count': 3, 'open_total': 1}},
+                    'status': 'sent',
+                    'subject': 'Everything okay?'
+                },
+                # 'expected_brand': 'Healthcare Dive: IT',  # doesn't work!
+                'expected_type': DiveEmailTypes.WelcomeSeries,
+                'comment': 'Old HC:IT welcome message',
+            },
+            {
+                'input': {
+                    'blast_id': 4069274,
+                    'email_count': 22671,
+                    'labels': [],
+                    'list': 'Education Dive: Higher Ed',
+                    'mode': 'email',
+                    'modify_time': 'Wed, 25 Mar 2015 10:02:08 -0400',
+                    'modify_user': 'xxx@industrydive.com',
+                    'name': 'Issue: 2015-03-25 Higher Ed Education Dive Newsletter',
+                    'public_url': 'link.divenewsletter.com/public/4069274',
+                    'schedule_time': 'Wed, 25 Mar 2015 10:17:08 -0400',
+                    'sent_count': 22670,
+                    'start_time': 'Wed, 25 Mar 2015 10:18:02 -0400',
+                    'status': 'sent',
+                    'subject': "Mar. 25 - Jones' ouster could cost Ole Miss $20M grant"
+                },
+                'expected_brand': 'Education Dive: Higher Ed',
+                'expected_type': DiveEmailTypes.Newsletter,
+                'comment': 'Old higher ed newsletter',
             }
         ]
 
         for test_case in test_cases:
             # test email type is correct
-            actual_email_type = self.sailthru_client._infer_dive_email_type(test_case['input'])
-            msg = "dive_email_type '%s' != '%s' while testing '%s'" % \
-                  (actual_email_type, test_case['expected_type'], test_case['comment'])
-            self.assertEqual(actual_email_type, test_case['expected_type'], msg)
+            if 'expected_type' in test_case.keys():
+                actual_email_type = self.sailthru_client._infer_dive_email_type(test_case['input'])
+                msg = "dive_email_type '%s' != '%s' while testing '%s'" % \
+                      (actual_email_type, test_case['expected_type'], test_case['comment'])
+                self.assertEqual(actual_email_type, test_case['expected_type'], msg)
             # test brand is correct
-            actual_brand = self.sailthru_client._infer_dive_brand(test_case['input'])
-            msg = "dive_brand '%s' != '%s' while testing '%s'" % \
-                  (actual_brand, test_case['expected_brand'], test_case['comment'])
-            self.assertEqual(actual_brand, test_case['expected_brand'], msg)
+            if 'expected_brand' in test_case.keys():
+                actual_brand = self.sailthru_client._infer_dive_brand(test_case['input'])
+                msg = "dive_brand '%s' != '%s' while testing '%s'" % \
+                      (actual_brand, test_case['expected_brand'], test_case['comment'])
+                self.assertEqual(actual_brand, test_case['expected_brand'], msg)
 
     def test__infer_dive_email_type(self):
         """
