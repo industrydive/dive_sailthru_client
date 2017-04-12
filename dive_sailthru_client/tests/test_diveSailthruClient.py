@@ -34,7 +34,7 @@ class TestDiveSailthruClient(TestCase):
                 'comment': 'MM newsletter',
             },
             {
-                'input':  {
+                'input': {
                     'blast_id': 9344866,
                     'data_feed_url': 'http://feed.sailthru.com/ws/feed?id=58d3f044ade9c205068b4569',
                     'email_count': 22014,
@@ -82,23 +82,16 @@ class TestDiveSailthruClient(TestCase):
         ]
 
         for test_case in test_cases:
+            # test email type is correct
             actual_email_type = self.sailthru_client._infer_dive_email_type(test_case['input'])
-            self.assertEqual(
-                actual_email_type,
-                test_case['expected_type'],
-                "dive_email_type '%s' != '%s' while testing '%s'" % 
-                    (actual_email_type, test_case['expected_type'], test_case['comment'])
-            )
+            msg = "dive_email_type '%s' != '%s' while testing '%s'" % \
+                  (actual_email_type, test_case['expected_type'], test_case['comment'])
+            self.assertEqual(actual_email_type, test_case['expected_type'], msg)
+            # test brand is correct
             actual_brand = self.sailthru_client._infer_dive_brand(test_case['input'])
-            self.assertEqual(
-                actual_brand,
-                test_case['expected_brand'],
-                "dive_brand '%s' != '%s' while testing '%s'" % 
-                    (actual_brand, test_case['expected_brand'], test_case['comment'])
-
-            )
-
-            
+            msg = "dive_brand '%s' != '%s' while testing '%s'" % \
+                  (actual_brand, test_case['expected_brand'], test_case['comment'])
+            self.assertEqual(actual_brand, test_case['expected_brand'], msg)
 
     def test__infer_dive_email_type(self):
         """
