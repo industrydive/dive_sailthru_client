@@ -168,6 +168,7 @@ class TestDiveSailthruClient(TestCase):
         Test that we can guess the dive email type from the mailing.
         :return:
         """
+        # TODO: reorganize this test to match the style of test__infer_dive_brand
         inputs = [
             {
                 'blast_id': 4889393,
@@ -215,42 +216,40 @@ class TestDiveSailthruClient(TestCase):
             self.assertEqual(output, expected[index])
 
     def test__infer_dive_brand(self):
-        """
-        Test that we can guess the dive brand from the mailing.
-        :return:
-        """
-
-        inputs = [
-            'This is a Blast List',
-            'This is not a BLAST LIST',
-            'This is a Weekender',
-            'This is not a WEEKENDER',
-            'This is a Dive',
-            'This is not a dive',
-            'Word Dive: Word',
-            'Is not a Dive: because spaces',
-            'Not a dive: because capital D',
-            'Not a Dive because colon'
-            ''
+        test_campaigns = [
+            {
+                # test that brand = list for regular newsletters
+                'input': {
+                    'list': 'foo',
+                    'dive_email_type': DiveEmailTypes.Newsletter
+                },
+                'expected_brand': 'foo'
+            },
+            {
+                # test that missing campaign data has brand of None
+                'input': {'gibberish': 'nothing useful'},
+                'expected_brand': None
+            },
+            {
+                # test that brand = list minus " Weekender" for weekender
+                'input': {
+                    'list': 'Wkndr Test Weekender',
+                    'dive_email_type': DiveEmailTypes.Weekender
+                },
+                'expected_brand': 'Wkndr Test'
+            },
+            {
+                # test that brand = list minus " Blast List" for blasts
+                'input': {
+                    'list': 'Blast Test Blast List',
+                    'dive_email_type': DiveEmailTypes.Blast
+                },
+                'expected_brand': 'Blast Test'
+            },
         ]
-
-        expected = [
-            'This is a',
-            'This is not a BLAST LIST',
-            'This is a',
-            'This is not a WEEKENDER',
-            'This is a Dive',
-            None,
-            'Word Dive: Word',
-            None,
-            None,
-            None,
-            None
-        ]
-
-        for index, input in enumerate(inputs):
-            output = self.sailthru_client._infer_dive_brand({'list': input})
-            self.assertEqual(output, expected[index])
+        for test_campaign in test_campaigns:
+            output_brand = self.sailthru_client._infer_dive_brand(test_campaign['input'])
+            self.assertEqual(output_brand, test_campaign['expected_brand'])
 
     @patch('sailthru.sailthru_response.SailthruResponse')
     @patch('sailthru.sailthru_response.SailthruResponseError')
