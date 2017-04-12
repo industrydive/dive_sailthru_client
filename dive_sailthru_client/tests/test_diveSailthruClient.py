@@ -98,7 +98,7 @@ class TestDiveSailthruClient(TestCase):
                     'subject': 'Question: Construction Dive: Tech',
                     'suppress_list': ['Suppression: have NOT opened or clicked or viewed page in last 28 days']
                 },
-                # 'expected_brand': 'Construction Dive: Tech',  # doesn't work!
+                # 'expected_brand': 'Construction Dive: Tech',  # TODO: doesn't work!
                 'expected_type': DiveEmailTypes.WelcomeSeries,
                 'comment': 'CD:Tech Welcome Series',
             },
@@ -122,7 +122,7 @@ class TestDiveSailthruClient(TestCase):
                     'status': 'sent',
                     'subject': 'Everything okay?'
                 },
-                # 'expected_brand': 'Healthcare Dive: IT',  # doesn't work!
+                # 'expected_brand': 'Healthcare Dive: IT',  # TODO: doesn't work!
                 'expected_type': DiveEmailTypes.WelcomeSeries,
                 'comment': 'Old HC:IT welcome message',
             },
@@ -147,6 +147,7 @@ class TestDiveSailthruClient(TestCase):
                 'expected_type': DiveEmailTypes.Newsletter,
                 'comment': 'Old higher ed newsletter',
             }
+            # TODO: add tests for Breaking news
         ]
 
         for test_case in test_cases:

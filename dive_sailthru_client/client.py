@@ -69,7 +69,7 @@ class DiveSailthruClient(SailthruClient):
 
     def _infer_dive_brand(self, campaign):
         """
-        Guesses the Dive newsletter brand.
+        Guesses the Dive newsletter brand based on its dive_email_type and list name
 
         :param dict campaign: A dict of campaign metadata.
         :return: String representing main Dive name (like "Healthcare Dive")
