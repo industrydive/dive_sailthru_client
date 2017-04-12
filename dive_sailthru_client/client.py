@@ -1,6 +1,7 @@
 from sailthru.sailthru_client import SailthruClient
 from errors import SailthruApiError
 import datetime
+import re
 
 # TODO: enforce structure on returned dicts -- make all keys present even if
 # value is zero. Maybe replace with class.
@@ -75,15 +76,20 @@ class DiveSailthruClient(SailthruClient):
             or None.
         :rtype: string|None
         """
-        import re
+
+        # This function requires a dive_email_type, so if 'dive_email_type' is already a key
+        # in the campaign than use it, otherwise call it here.
+        if 'dive_email_type' in campaign.keys():
+            dive_email_type = campaign['dive_email_type']
+        else:
+            dive_email_type = self._infer_dive_email_type(campaign)
 
         list_name = campaign.get('list', '')
-        if list_name.lower().endswith("blast list"):
+        if dive_email_type == DiveEmailTypes.Blast and list_name.lower().endswith("blast list"):
             return re.sub(r' [Bb]last [Ll]ist$', '', list_name)
-        if list_name.lower().endswith("weekender"):
+        if dive_email_type == DiveEmailTypes.Weekender and list_name.lower().endswith("weekender"):
             return re.sub(r' [Ww]eekender$', '', list_name)
-        if list_name.endswith(" Dive") or \
-                re.match(r'[A-Za-z]+ Dive: [a-zA-Z]+', list_name):
+        if dive_email_type == DiveEmailTypes.Newsletter:
             return list_name
 
         return None
