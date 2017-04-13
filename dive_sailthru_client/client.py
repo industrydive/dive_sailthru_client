@@ -23,7 +23,7 @@ class DiveSailthruClient(SailthruClient):
     """
     Our Sailthru client implementation that adds our own concepts.
 
-    This includes dive publication (misnamed as key dive_brand), dive email type, 
+    This includes dive publication (misnamed as key dive_brand), dive email type,
     and easier ways to query campaigns.
     """
 
