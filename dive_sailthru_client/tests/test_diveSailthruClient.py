@@ -31,7 +31,7 @@ class TestDiveSailthruClient(TestCase):
                                 " Snapchat's Bitmoji is most downloaded app")
                 },
                 'expected_type': DiveEmailTypes.Newsletter,
-                'expected_brand': 'Mobile Marketer',
+                'expected_publication': 'Mobile Marketer',
                 'comment': 'MM newsletter',
             },
             {
@@ -52,7 +52,7 @@ class TestDiveSailthruClient(TestCase):
                     'status': 'sent',
                     'subject': 'Weekender: {{top_stories[0].title}}',
                 },
-                'expected_brand': 'Mobile Marketer',
+                'expected_publication': 'Mobile Marketer',
                 'expected_type': DiveEmailTypes.Weekender,
                 'comment': 'MM weekender',
             },
@@ -74,7 +74,7 @@ class TestDiveSailthruClient(TestCase):
                     'subject': 'Vibes brings you mobile consumer preference data for 2017',
                     'suppress_list': []
                 },
-                'expected_brand': 'Mobile Marketer',
+                'expected_publication': 'Mobile Marketer',
                 'expected_type': DiveEmailTypes.Blast,
                 'comment': 'MM Email Blast',
             },
@@ -98,7 +98,7 @@ class TestDiveSailthruClient(TestCase):
                     'subject': 'Question: Construction Dive: Tech',
                     'suppress_list': ['Suppression: have NOT opened or clicked or viewed page in last 28 days']
                 },
-                # 'expected_brand': 'Construction Dive: Tech',  # TODO: doesn't work!
+                # 'expected_publication': 'Construction Dive: Tech',  # TODO: doesn't work!
                 'expected_type': DiveEmailTypes.WelcomeSeries,
                 'comment': 'CD:Tech Welcome Series',
             },
@@ -122,7 +122,7 @@ class TestDiveSailthruClient(TestCase):
                     'status': 'sent',
                     'subject': 'Everything okay?'
                 },
-                # 'expected_brand': 'Healthcare Dive: IT',  # TODO: doesn't work!
+                # 'expected_publication': 'Healthcare Dive: IT',  # TODO: doesn't work!
                 'expected_type': DiveEmailTypes.WelcomeSeries,
                 'comment': 'Old HC:IT welcome message',
             },
@@ -143,7 +143,7 @@ class TestDiveSailthruClient(TestCase):
                     'status': 'sent',
                     'subject': "Mar. 25 - Jones' ouster could cost Ole Miss $20M grant"
                 },
-                'expected_brand': 'Education Dive: Higher Ed',
+                'expected_publication': 'Education Dive: Higher Ed',
                 'expected_type': DiveEmailTypes.Newsletter,
                 'comment': 'Old higher ed newsletter',
             }
@@ -157,12 +157,12 @@ class TestDiveSailthruClient(TestCase):
                 msg = "dive_email_type '%s' != '%s' while testing '%s'" % \
                       (actual_email_type, test_case['expected_type'], test_case['comment'])
                 self.assertEqual(actual_email_type, test_case['expected_type'], msg)
-            # test brand is correct
-            if 'expected_brand' in test_case.keys():
-                actual_brand = self.sailthru_client._infer_dive_brand(test_case['input'])
-                msg = "dive_brand '%s' != '%s' while testing '%s'" % \
-                      (actual_brand, test_case['expected_brand'], test_case['comment'])
-                self.assertEqual(actual_brand, test_case['expected_brand'], msg)
+            # test publication is correct
+            if 'expected_publication' in test_case.keys():
+                actual_brand = self.sailthru_client._infer_dive_publication(test_case['input'])
+                msg = "dive_brand key was '%s' != '%s' while testing '%s'" % \
+                      (actual_brand, test_case['expected_publication'], test_case['comment'])
+                self.assertEqual(actual_brand, test_case['expected_publication'], msg)
 
     def test__infer_dive_email_type(self):
         """
@@ -216,41 +216,41 @@ class TestDiveSailthruClient(TestCase):
             output = self.sailthru_client._infer_dive_email_type(input)
             self.assertEqual(output, expected[index])
 
-    def test__infer_dive_brand(self):
+    def test__infer_dive_publication(self):
         test_campaigns = [
             {
-                # test that brand = list for regular newsletters
+                # test that publication = list for regular newsletters
                 'input': {
                     'list': 'foo',
                     'dive_email_type': DiveEmailTypes.Newsletter
                 },
-                'expected_brand': 'foo'
+                'expected_publication': 'foo'
             },
             {
-                # test that missing campaign data has brand of None
+                # test that missing campaign data has publication of None
                 'input': {'gibberish': 'nothing useful'},
-                'expected_brand': None
+                'expected_publication': None
             },
             {
-                # test that brand = list minus " Weekender" for weekender
+                # test that publication = list minus " Weekender" for weekender
                 'input': {
                     'list': 'Wkndr Test Weekender',
                     'dive_email_type': DiveEmailTypes.Weekender
                 },
-                'expected_brand': 'Wkndr Test'
+                'expected_publication': 'Wkndr Test'
             },
             {
-                # test that brand = list minus " Blast List" for blasts
+                # test that publication = list minus " Blast List" for blasts
                 'input': {
                     'list': 'Blast Test Blast List',
                     'dive_email_type': DiveEmailTypes.Blast
                 },
-                'expected_brand': 'Blast Test'
+                'expected_publication': 'Blast Test'
             },
         ]
         for test_campaign in test_campaigns:
-            output_brand = self.sailthru_client._infer_dive_brand(test_campaign['input'])
-            self.assertEqual(output_brand, test_campaign['expected_brand'])
+            output_publication = self.sailthru_client._infer_dive_publication(test_campaign['input'])
+            self.assertEqual(output_publication, test_campaign['expected_publication'])
 
     @patch('sailthru.sailthru_response.SailthruResponse')
     @patch('sailthru.sailthru_response.SailthruResponseError')
@@ -291,7 +291,7 @@ class TestDiveSailthruClient(TestCase):
         # }
         #
         # mock_client._infer_dive_brand_email_type.return_value = 'the type'
-        # mock_client._infer_dive_brand.return_value = 'the brand'
+        # mock_client._infer_dive_publication.return_value = 'the publication'
         # mock_client.api_get.return_value = mock_response
         #
         # from datetime import datetime, timedelta
@@ -299,7 +299,7 @@ class TestDiveSailthruClient(TestCase):
         #
         # self.assertEqual(campaigns[0].subject, 'this is a blast')
         # self.assertEqual(campaigns[0].dive_email_type, 'the type')
-        # self.assertEqual(campaigns[0].dive_brand, 'the brand')
+        # self.assertEqual(campaigns[0].dive_brand, 'the publication')
 
         # self.fail()
         pass

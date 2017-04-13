@@ -23,8 +23,8 @@ class DiveSailthruClient(SailthruClient):
     """
     Our Sailthru client implementation that adds our own concepts.
 
-    This includes dive brand, dive email type, and easier ways to query
-    campaigns.
+    This includes dive publication (misnamed as key dive_brand), dive email type, 
+    and easier ways to query campaigns.
     """
 
     def get_primary_lists(self):
@@ -67,12 +67,12 @@ class DiveSailthruClient(SailthruClient):
 
         return DiveEmailTypes.Unknown
 
-    def _infer_dive_brand(self, campaign):
+    def _infer_dive_publication(self, campaign):
         """
-        Guesses the Dive newsletter brand based on its dive_email_type and list name
+        Guesses the Dive newsletter's publication based on its dive_email_type and list name
 
         :param dict campaign: A dict of campaign metadata.
-        :return: String representing main Dive name (like "Healthcare Dive")
+        :return: String representing publication name (like "Healthcare Dive" or "Education Dive: Higher Ed")
             or None.
         :rtype: string|None
         """
@@ -108,8 +108,8 @@ class DiveSailthruClient(SailthruClient):
         """
         Get sent campaign (blast) metadata based on date range and optionally
         only sent to a named list. In addition to data returned from sailthru
-        api, adds additional fields dive_email_type and dive_brand to each
-        campaign.
+        api, adds additional fields dive_email_type and dive_brand (a misnomer for publication)
+        to each campaign.
 
         THIS USES THE 'blast' API endpoint, calling based on status and date (this
         returns different data than calling the 'blast' endpoint for a single campaign).
@@ -176,7 +176,8 @@ class DiveSailthruClient(SailthruClient):
             # chronological order.
             for c in reversed(data.get('blasts', [])):
                 c['dive_email_type'] = self._infer_dive_email_type(c)
-                c['dive_brand'] = self._infer_dive_brand(c)
+                # technically below gets the pub, but keeping key `dive_brand` for backwards compatability
+                c['dive_brand'] = self._infer_dive_publication(c)
                 # Automatically "fix" unicode problems.
                 # TODO: Not sure this is right.
                 c['subject'] = c['subject'].encode('utf-8', errors='replace')
