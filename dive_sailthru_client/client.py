@@ -1,6 +1,7 @@
 from sailthru.sailthru_client import SailthruClient
 from errors import SailthruApiError
 import datetime
+import re
 
 # TODO: enforce structure on returned dicts -- make all keys present even if
 # value is zero. Maybe replace with class.
@@ -22,8 +23,8 @@ class DiveSailthruClient(SailthruClient):
     """
     Our Sailthru client implementation that adds our own concepts.
 
-    This includes dive brand, dive email type, and easier ways to query
-    campaigns.
+    This includes dive publication (misnamed as key dive_brand), dive email type,
+    and easier ways to query campaigns.
     """
 
     def get_primary_lists(self):
@@ -66,24 +67,29 @@ class DiveSailthruClient(SailthruClient):
 
         return DiveEmailTypes.Unknown
 
-    def _infer_dive_brand(self, campaign):
+    def _infer_dive_publication(self, campaign):
         """
-        Guesses the Dive newsletter brand.
+        Guesses the Dive newsletter's publication based on its dive_email_type and list name
 
         :param dict campaign: A dict of campaign metadata.
-        :return: String representing main Dive name (like "Healthcare Dive")
+        :return: String representing publication name (like "Healthcare Dive" or "Education Dive: Higher Ed")
             or None.
         :rtype: string|None
         """
-        import re
+
+        # This function requires a dive_email_type, so if 'dive_email_type' is already a key
+        # in the campaign than use it, otherwise call it here.
+        if 'dive_email_type' in campaign.keys():
+            dive_email_type = campaign['dive_email_type']
+        else:
+            dive_email_type = self._infer_dive_email_type(campaign)
 
         list_name = campaign.get('list', '')
-        if list_name.lower().endswith("blast list"):
+        if dive_email_type == DiveEmailTypes.Blast and list_name.lower().endswith("blast list"):
             return re.sub(r' [Bb]last [Ll]ist$', '', list_name)
-        if list_name.lower().endswith("weekender"):
+        if dive_email_type == DiveEmailTypes.Weekender and list_name.lower().endswith("weekender"):
             return re.sub(r' [Ww]eekender$', '', list_name)
-        if list_name.endswith(" Dive") or \
-                re.match(r'[A-Za-z]+ Dive: [a-zA-Z]+', list_name):
+        if dive_email_type == DiveEmailTypes.Newsletter:
             return list_name
 
         return None
@@ -102,8 +108,8 @@ class DiveSailthruClient(SailthruClient):
         """
         Get sent campaign (blast) metadata based on date range and optionally
         only sent to a named list. In addition to data returned from sailthru
-        api, adds additional fields dive_email_type and dive_brand to each
-        campaign.
+        api, adds additional fields dive_email_type and dive_brand (a misnomer for publication)
+        to each campaign.
 
         THIS USES THE 'blast' API endpoint, calling based on status and date (this
         returns different data than calling the 'blast' endpoint for a single campaign).
@@ -170,7 +176,8 @@ class DiveSailthruClient(SailthruClient):
             # chronological order.
             for c in reversed(data.get('blasts', [])):
                 c['dive_email_type'] = self._infer_dive_email_type(c)
-                c['dive_brand'] = self._infer_dive_brand(c)
+                # technically below gets the pub, but keeping key `dive_brand` for backwards compatability
+                c['dive_brand'] = self._infer_dive_publication(c)
                 # Automatically "fix" unicode problems.
                 # TODO: Not sure this is right.
                 c['subject'] = c['subject'].encode('utf-8', errors='replace')
