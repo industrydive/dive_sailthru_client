@@ -165,6 +165,7 @@ class DiveSailthruClient(SailthruClient):
                 'status': 'sent',
                 'start_date': page_start_date.strftime("%Y-%m-%d"),
                 'end_date': page_end_date.strftime("%Y-%m-%d"),
+                'limit': 999999,  # workaround for limited data returned, see TECH-1615.
             }
             if list_name is not None:
                 api_params['list'] = list_name
@@ -172,9 +173,18 @@ class DiveSailthruClient(SailthruClient):
             result = self.api_get('blast', api_params)
 
             data = result.json
+            blasts = data.get('blasts', [])
+            filtered_count = data.get('filtered_count', 0)
+            # We discovered in TECH-1615 that Sailthru is (accidentally?) limiting number of results. So let's
+            # specifically raise an exception if the expected number of records doesn't match the actual returned.
+            if filtered_count != len(blasts):
+                raise SailthruApiError(
+                    "Incomplete 'blast' API data. Expected %d records, got %d" % (filtered_count, len(blasts))
+                )
+
             # We reverse the results to keep everything in ascending
             # chronological order.
-            for c in reversed(data.get('blasts', [])):
+            for c in reversed(blasts):
                 c['dive_email_type'] = self._infer_dive_email_type(c)
                 # technically below gets the pub, but keeping key `dive_brand` for backwards compatability
                 c['dive_brand'] = self._infer_dive_publication(c)
