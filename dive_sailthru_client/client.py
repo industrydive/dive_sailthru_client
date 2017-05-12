@@ -17,6 +17,7 @@ class DiveEmailTypes:
     Weekender = "weekender"
     Unknown = "unknown"
     BreakingNews = "breaking"
+    Spotlight = "spotlight"
 
 
 class DiveSailthruClient(SailthruClient):
@@ -55,6 +56,8 @@ class DiveSailthruClient(SailthruClient):
             return DiveEmailTypes.Blast
         if "Welcome Series" in labels:
             return DiveEmailTypes.WelcomeSeries
+        if "spotlight-newsletter" in labels:
+                return DiveEmailTypes.Spotlight
         if list_name.endswith("Weekender") or \
                 name.startswith("Newsletter Weekly Roundup"):
             return DiveEmailTypes.Weekender
@@ -85,8 +88,11 @@ class DiveSailthruClient(SailthruClient):
             dive_email_type = self._infer_dive_email_type(campaign)
 
         list_name = campaign.get('list', '')
-        if dive_email_type == DiveEmailTypes.Blast and list_name.lower().endswith("blast list"):
-            return re.sub(r' [Bb]last [Ll]ist$', '', list_name)
+        if (dive_email_type in [DiveEmailTypes.Blast, DiveEmailTypes.Spotlight]) and list_name.lower().endswith("blast list"):
+                # The Utility Dive Spotlight goes out to a special
+                # blast list: "Utility Dive and sub pubs Blast List"
+                # This regex handles that as well as normal blast lists
+                return re.sub(r'( and sub pubs)? [Bb]last [Ll]ist$', '', list_name)
         if dive_email_type == DiveEmailTypes.Weekender and list_name.lower().endswith("weekender"):
             return re.sub(r' [Ww]eekender$', '', list_name)
         if dive_email_type == DiveEmailTypes.Newsletter:
