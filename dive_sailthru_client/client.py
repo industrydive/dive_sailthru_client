@@ -56,6 +56,10 @@ class DiveSailthruClient(SailthruClient):
             return DiveEmailTypes.Blast
         if "Welcome Series" in labels:
             return DiveEmailTypes.WelcomeSeries
+        # WARNING! Order matters below
+        # DiveEmailTypes.Spotlight check must be above DiveEmailTypes.Newsletter check
+        # as that would also be valid
+        # since a spotlight's name property also starts with "Issue: "
         if "spotlight-newsletter" in labels:
                 return DiveEmailTypes.Spotlight
         if list_name.endswith("Weekender") or \
