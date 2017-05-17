@@ -146,6 +146,29 @@ class TestDiveSailthruClient(TestCase):
                 'expected_publication': 'Education Dive: Higher Ed',
                 'expected_type': DiveEmailTypes.Newsletter,
                 'comment': 'Old higher ed newsletter',
+            },
+            {
+                "input": {
+                    'blast_id': 9566780,
+                    'email_count': 23490,
+                    'labels': ["Education", "spotlight-newsletter"],
+                    'list': 'Education Dive: K12 Blast List',
+                    'mode': 'email',
+                    'modify_time': 'Mon, 08 May 2017 14:00:24 -0400',
+                    'modify_user': 'xxx@industrydive.com',
+                    'name': 'Issue: 2017-05-08 Education K12 Spotlight [issue:10161]',
+                    'public_url': 'link.educationdive.com/public/9566780',
+                    'schedule_time': 'Mon, 08 May 2017 14:15:24 -0400',
+                    'sent_count': 23490,
+                    'start_time': 'Mon, 08 May 2017 14:16:02 -0400',
+                    'status': 'sent',
+                    'subject': "Spotlight on Literacy"
+
+                },
+                'expected_publication': 'Education Dive: K12',
+                'expected_type': DiveEmailTypes.Spotlight,
+                'comment': 'Education K12 spotlight',
+
             }
             # TODO: add tests for Breaking news
         ]
