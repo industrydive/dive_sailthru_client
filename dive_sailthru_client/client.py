@@ -364,7 +364,7 @@ class DiveSailthruClient(SailthruClient):
         self.raise_exception_if_error(response)
 
         return response
-    @
+
     def api_get(self, *args, **kwargs):
         """
         Wrapper around api_get to raise exception if there is any problem.
