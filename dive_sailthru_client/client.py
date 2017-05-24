@@ -302,7 +302,7 @@ class DiveSailthruClient(SailthruClient):
             try:
                 result = self.stats_blast(blast_id=blast_id, options=options)
                 break
-            except SailthruClientError as e:
+            except SailthruClientError:
                 pass
         else:
             raise  # Exceeded max number of retries
