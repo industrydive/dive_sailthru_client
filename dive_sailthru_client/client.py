@@ -2,6 +2,7 @@ from sailthru.sailthru_client import SailthruClient
 from errors import SailthruApiError
 import datetime
 import re
+from 
 
 # TODO: enforce structure on returned dicts -- make all keys present even if
 # value is zero. Maybe replace with class.
@@ -295,7 +296,15 @@ class DiveSailthruClient(SailthruClient):
         if include_urls:
             options['urls'] = '1'
 
-        result = self.stats_blast(blast_id=blast_id, options=options)
+        for _ in range(5):
+            try:
+                result = self.stats_blast(blast_id=blast_id, options=options)
+                break
+            except SailthruClientError as e:
+                pass
+        else:
+            raise  # Exceeded max number of retries
+
         self.raise_exception_if_error(result)
 
         return result.json
@@ -356,7 +365,7 @@ class DiveSailthruClient(SailthruClient):
         self.raise_exception_if_error(response)
 
         return response
-
+    @
     def api_get(self, *args, **kwargs):
         """
         Wrapper around api_get to raise exception if there is any problem.
