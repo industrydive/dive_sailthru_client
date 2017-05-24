@@ -2,7 +2,6 @@ from sailthru.sailthru_client import SailthruClient
 from errors import SailthruApiError
 import datetime
 import re
-from 
 
 # TODO: enforce structure on returned dicts -- make all keys present even if
 # value is zero. Maybe replace with class.
