@@ -1,6 +1,7 @@
 from sailthru.sailthru_client import SailthruClient
 from errors import SailthruApiError
 import datetime
+import time
 import re
 
 # TODO: enforce structure on returned dicts -- make all keys present even if
@@ -336,6 +337,67 @@ class DiveSailthruClient(SailthruClient):
             'blast_id': blast_id,
         })
 
+        return result.json
+
+    def export_list(self, list_name, fields=None, sailthru_vars=None, block_until_complete=True):
+        """ When the job is complete, the response should look something like:
+
+        {
+          'status': 'completed', 
+          'job_id': '591b670d15dd96ab608b4c5f',
+          'start_time': 'Tue, 16 May 2017 16:54:38 -0400',
+          'list': 'Just Eli',
+          'export_url': 'https://s3.amazonaws.com/sailthru/export/2017/05/16/64860e9036c829ed8a1c5f34xxxxxxx',
+          'filename': 'just_eli.csv',
+          'end_time': 'Tue, 16 May 2017 16:54:38 -0400',
+          'name': 'Export All List Data: Just Eli'}
+
+          And fetching the S3 URL looks like:
+          [...]
+          Content-Disposition: attachment; filename=just_eli.csv
+          Accept-Ranges: bytes
+          Content-Type: text/csv; charset=utf-8
+          Content-Length: 4206
+          [...]
+        """
+        job_params = {
+            'job': 'export_list_data',
+            'list': list_name,
+            'fields': {},
+        }
+        if fields:
+            for f in fields:
+                job_params['fields'][f] = 1
+        if sailthru_vars:
+            job_params['fields']['vars'] = {}
+            for v in sailthru_vars:
+                job_params['fields']['vars'][v] = 1
+        job_result_json = self.api_post('job', job_params).json
+        job_id = job_result_json['job_id']
+        if block_until_complete:
+            job_result_json = self._block_until_job_complete(job_id)
+        if job_result_json['status'] not in ('pending','completed'):
+            raise SailthruApiError("Job '%s' ended with unexpected status '%s'", job_id, job_result_json['status'])
+        return job_result_json
+
+    def _block_until_job_complete(self, job_id, seconds_between_checks=1, max_wait_seconds=600):
+        """ returns result of the job; raises exception if job not complete in max_wait_seconds """
+        max_iterations = int(max_wait_seconds/seconds_between_checks)+1
+        for _ in range(max_iterations):
+            job_result_json = self.get_job_info(job_id)
+            if job_result_json['status'] != 'pending':
+                # It's either complete or something went wrong, so stop checking
+                break
+            time.sleep(seconds_between_checks)
+        # If the loop finished and it's still pending, then it has now taken too long
+        if job_result_json['status'] == 'pending':
+            raise SailthruApiError("Exceeded max wait time of %d seconds on job id '%s'", max_wait_seconds, job_id)
+        return job_result_json
+
+
+    def get_job_info(self, job_id):
+        """ Expected keys returned: status, name, start_time, end_time """
+        result = self.api_get('job', {'job_id':job_id})
         return result.json
 
     def api_post(self, *args, **kwargs):
