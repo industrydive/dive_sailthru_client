@@ -1,5 +1,8 @@
 from sailthru.sailthru_client import SailthruClient
 from errors import SailthruApiError
+# this is for the hack in get_campaign_stats
+from sailthru.sailthru_error import SailthruClientError
+
 import datetime
 import re
 
