@@ -12,6 +12,7 @@ setup(
     packages=['dive_sailthru_client'],
     install_requires=[
         'sailthru-client==2.3.1',
+        'retrying==1.3.3',
     ],
     test_suite='nose.collector',
     tests_require=['nose', 'mock']

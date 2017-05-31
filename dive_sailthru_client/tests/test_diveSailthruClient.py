@@ -334,3 +334,11 @@ class TestDiveSailthruClient(TestCase):
     def test_get_campaign_data(self):
         # self.fail()
         pass
+
+    def test_is_sailthru_client_timeout_error(self):
+        from requests.exceptions import ConnectTimeout
+        from sailthru.sailthru_error import SailthruClientError
+        from dive_sailthru_client.utils import is_sailthru_client_timeout_error
+
+        exception = SailthruClientError(ConnectTimeout)
+        self.assertTrue(is_sailthru_client_timeout_error(exception))
