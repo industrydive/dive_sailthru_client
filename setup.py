@@ -2,10 +2,10 @@ from setuptools import setup
 
 setup(
     name="dive_sailthru_client",
-    version="0.0.9",
+    version="0.0.10",
     description="Industry Dive abstraction of the Sailthru API client",
-    author='David Barbarisi',
-    author_email='dbarbarisi@industrydive.com',
+    author='Industry Dive',
+    author_email='tech.team@industrydive.com',
     url='https://github.com/industrydive/dive_sailthru_client',
     license='Python',
     zip_safe=False,
