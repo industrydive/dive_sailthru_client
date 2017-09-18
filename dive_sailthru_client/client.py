@@ -343,7 +343,7 @@ class DiveSailthruClient(SailthruClient):
         """ When the job is complete, the response should look something like:
 
         {
-          'status': 'completed', 
+          'status': 'completed',
           'job_id': '591b670d15dd96ab608b4c5f',
           'start_time': 'Tue, 16 May 2017 16:54:38 -0400',
           'list': 'Just Eli',
@@ -376,13 +376,13 @@ class DiveSailthruClient(SailthruClient):
         job_id = job_result_json['job_id']
         if block_until_complete:
             job_result_json = self._block_until_job_complete(job_id)
-        if job_result_json['status'] not in ('pending','completed'):
+        if job_result_json['status'] not in ('pending', 'completed'):
             raise SailthruApiError("Job '%s' ended with unexpected status '%s'", job_id, job_result_json['status'])
         return job_result_json
 
     def _block_until_job_complete(self, job_id, seconds_between_checks=1, max_wait_seconds=600):
         """ returns result of the job; raises exception if job not complete in max_wait_seconds """
-        max_iterations = int(max_wait_seconds/seconds_between_checks)+1
+        max_iterations = int(max_wait_seconds / seconds_between_checks) + 1
         for _ in range(max_iterations):
             job_result_json = self.get_job_info(job_id)
             if job_result_json['status'] != 'pending':
@@ -394,10 +394,9 @@ class DiveSailthruClient(SailthruClient):
             raise SailthruApiError("Exceeded max wait time of %d seconds on job id '%s'", max_wait_seconds, job_id)
         return job_result_json
 
-
     def get_job_info(self, job_id):
         """ Expected keys returned: status, name, start_time, end_time """
-        result = self.api_get('job', {'job_id':job_id})
+        result = self.api_get('job', {'job_id': job_id})
         return result.json
 
     def api_post(self, *args, **kwargs):
