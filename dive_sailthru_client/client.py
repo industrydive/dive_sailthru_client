@@ -190,6 +190,7 @@ class DiveSailthruClient(object):
                 c['dive_brand'] = self._infer_dive_brand(c)
                 # Automatically "fix" unicode problems.
                 # TODO: Not sure this is right.
+                c['name'] = c['name'].encode('utf-8', errors='replace')
                 c['subject'] = c['subject'].encode('utf-8', errors='replace')
                 campaigns.append(c)
 
