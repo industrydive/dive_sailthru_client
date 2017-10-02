@@ -1,6 +1,10 @@
 from sailthru.sailthru_client import SailthruClient
 from errors import SailthruApiError
+# We need the SailthruClientError to be able to handle retries in api_get
+from sailthru.sailthru_error import SailthruClientError
+
 import datetime
+import re
 
 # TODO: enforce structure on returned dicts -- make all keys present even if
 # value is zero. Maybe replace with class.
@@ -16,32 +20,16 @@ class DiveEmailTypes:
     Weekender = "weekender"
     Unknown = "unknown"
     BreakingNews = "breaking"
+    Spotlight = "spotlight"
 
 
-class DiveSailthruClient(object):
+class DiveSailthruClient(SailthruClient):
     """
     Our Sailthru client implementation that adds our own concepts.
 
-    This includes dive brand, dive email type, and easier ways to query
-    campaigns.
+    This includes dive publication (misnamed as key dive_brand), dive email type,
+    and easier ways to query campaigns.
     """
-
-    def __init__(self, api_key=None, api_secret=None, sailthru_client=None):
-        """
-        Set up the sailthru client using composition.
-
-        :param api_key:
-        :param api_secret:
-        :param sailthru_client:
-        """
-        if sailthru_client is None:
-            if api_key is None:
-                raise ValueError('Sailthru API key not provided.')
-            elif api_secret is None:
-                raise ValueError('Sailthru API secret not provided.')
-            sailthru_client = SailthruClient(api_key, api_secret)
-
-        self.sailthru_client = sailthru_client
 
     def get_primary_lists(self):
         """
@@ -71,6 +59,12 @@ class DiveSailthruClient(object):
             return DiveEmailTypes.Blast
         if "Welcome Series" in labels:
             return DiveEmailTypes.WelcomeSeries
+        # WARNING! Order matters below
+        # DiveEmailTypes.Spotlight check must be above DiveEmailTypes.Newsletter check
+        # as that would also be valid
+        # since a spotlight's name property also starts with "Issue: "
+        if "spotlight-newsletter" in labels:
+                return DiveEmailTypes.Spotlight
         if list_name.endswith("Weekender") or \
                 name.startswith("Newsletter Weekly Roundup"):
             return DiveEmailTypes.Weekender
@@ -83,24 +77,32 @@ class DiveSailthruClient(object):
 
         return DiveEmailTypes.Unknown
 
-    def _infer_dive_brand(self, campaign):
+    def _infer_dive_publication(self, campaign):
         """
-        Guesses the Dive newsletter brand.
+        Guesses the Dive newsletter's publication based on its dive_email_type and list name
 
         :param dict campaign: A dict of campaign metadata.
-        :return: String representing main Dive name (like "Healthcare Dive")
+        :return: String representing publication name (like "Healthcare Dive" or "Education Dive: Higher Ed")
             or None.
         :rtype: string|None
         """
-        import re
+
+        # This function requires a dive_email_type, so if 'dive_email_type' is already a key
+        # in the campaign than use it, otherwise call it here.
+        if 'dive_email_type' in campaign.keys():
+            dive_email_type = campaign['dive_email_type']
+        else:
+            dive_email_type = self._infer_dive_email_type(campaign)
 
         list_name = campaign.get('list', '')
-        if list_name.lower().endswith("blast list"):
-            return re.sub(r' [Bb]last [Ll]ist$', '', list_name)
-        if list_name.lower().endswith("weekender"):
+        if (dive_email_type in [DiveEmailTypes.Blast, DiveEmailTypes.Spotlight]) and list_name.lower().endswith("blast list"):
+                # The Utility Dive Spotlight goes out to a special
+                # blast list: "Utility Dive and sub pubs Blast List"
+                # This regex handles that as well as normal blast lists
+                return re.sub(r'( and sub pubs)? [Bb]last [Ll]ist$', '', list_name)
+        if dive_email_type == DiveEmailTypes.Weekender and list_name.lower().endswith("weekender"):
             return re.sub(r' [Ww]eekender$', '', list_name)
-        if list_name.endswith(" Dive") or \
-                re.match(r'[A-Za-z]+ Dive: [a-zA-Z]+', list_name):
+        if dive_email_type == DiveEmailTypes.Newsletter:
             return list_name
 
         return None
@@ -119,8 +121,8 @@ class DiveSailthruClient(object):
         """
         Get sent campaign (blast) metadata based on date range and optionally
         only sent to a named list. In addition to data returned from sailthru
-        api, adds additional fields dive_email_type and dive_brand to each
-        campaign.
+        api, adds additional fields dive_email_type and dive_brand (a misnomer for publication)
+        to each campaign.
 
         THIS USES THE 'blast' API endpoint, calling based on status and date (this
         returns different data than calling the 'blast' endpoint for a single campaign).
@@ -176,6 +178,7 @@ class DiveSailthruClient(object):
                 'status': 'sent',
                 'start_date': page_start_date.strftime("%Y-%m-%d"),
                 'end_date': page_end_date.strftime("%Y-%m-%d"),
+                'limit': 999999,  # workaround for limited data returned, see TECH-1615.
             }
             if list_name is not None:
                 api_params['list'] = list_name
@@ -183,11 +186,21 @@ class DiveSailthruClient(object):
             result = self.api_get('blast', api_params)
 
             data = result.json
+            blasts = data.get('blasts', [])
+            filtered_count = data.get('filtered_count', 0)
+            # We discovered in TECH-1615 that Sailthru is (accidentally?) limiting number of results. So let's
+            # specifically raise an exception if the expected number of records doesn't match the actual returned.
+            if filtered_count != len(blasts):
+                raise SailthruApiError(
+                    "Incomplete 'blast' API data. Expected %d records, got %d" % (filtered_count, len(blasts))
+                )
+
             # We reverse the results to keep everything in ascending
             # chronological order.
-            for c in reversed(data.get('blasts', [])):
+            for c in reversed(blasts):
                 c['dive_email_type'] = self._infer_dive_email_type(c)
-                c['dive_brand'] = self._infer_dive_brand(c)
+                # technically below gets the pub, but keeping key `dive_brand` for backwards compatability
+                c['dive_brand'] = self._infer_dive_publication(c)
                 # Automatically "fix" unicode problems.
                 # TODO: Not sure this is right.
                 c['name'] = c['name'].encode('utf-8', errors='replace')
@@ -343,16 +356,37 @@ class DiveSailthruClient(object):
         """
         Wrapper around api_post to raise exception if there is any problem.
         """
-        response = self.sailthru_client.api_post(*args, **kwargs)
+        response = super(DiveSailthruClient, self).api_post(*args, **kwargs)
         self.raise_exception_if_error(response)
 
         return response
 
     def api_get(self, *args, **kwargs):
         """
-        Wrapper around api_get to raise exception if there is any problem.
+        Wrapper around api_get to raise exception if there is any problem. And
+        to add some simple retry logic for Connection Timeout errors. We encountered
+        these timeout errors in the wild in some small percentage of stats_blast API
+        calls. (See TECH-1736)
         """
-        response = self.sailthru_client.api_get(*args, **kwargs)
+        for _ in range(3):
+            try:
+                response = super(DiveSailthruClient, self).api_get(*args, **kwargs)
+                break
+            except SailthruClientError as e:
+                if 'ConnectTimeoutError' in str(e):
+                    # We want to retry connection timeout errors only. Sailthru client
+                    #   smushes the original exception from Requests into a string arg
+                    #   so we need to test for it with string matching here.
+                    pass
+                else:
+                    # If it wasn't a ConnectTimeoutError than don't retry
+                    raise
+        else:
+            # If we got here we exceeded the max number of retries
+            raise
+
+        # At this point we have a response from the server but we still need to check
+        #   if the response itself is marked as an error
         self.raise_exception_if_error(response)
 
         return response
