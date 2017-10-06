@@ -1,5 +1,5 @@
 from sailthru.sailthru_client import SailthruClient
-from .errors import SailthruApiError
+from errors import SailthruApiError
 # We need the SailthruClientError to be able to handle retries in api_get
 from sailthru.sailthru_error import SailthruClientError
 
@@ -89,7 +89,7 @@ class DiveSailthruClient(SailthruClient):
 
         # This function requires a dive_email_type, so if 'dive_email_type' is already a key
         # in the campaign than use it, otherwise call it here.
-        if 'dive_email_type' in list(campaign.keys()):
+        if 'dive_email_type' in campaign.keys():
             dive_email_type = campaign['dive_email_type']
         else:
             dive_email_type = self._infer_dive_email_type(campaign)
