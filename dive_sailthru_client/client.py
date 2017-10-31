@@ -1,5 +1,8 @@
 from sailthru.sailthru_client import SailthruClient
 from errors import SailthruApiError
+# We need the SailthruClientError to be able to handle retries in api_get
+from sailthru.sailthru_error import SailthruClientError
+
 import datetime
 import time
 import re
@@ -18,6 +21,7 @@ class DiveEmailTypes:
     Weekender = "weekender"
     Unknown = "unknown"
     BreakingNews = "breaking"
+    Spotlight = "spotlight"
 
 
 class DiveSailthruClient(SailthruClient):
@@ -56,6 +60,12 @@ class DiveSailthruClient(SailthruClient):
             return DiveEmailTypes.Blast
         if "Welcome Series" in labels:
             return DiveEmailTypes.WelcomeSeries
+        # WARNING! Order matters below
+        # DiveEmailTypes.Spotlight check must be above DiveEmailTypes.Newsletter check
+        # as that would also be valid
+        # since a spotlight's name property also starts with "Issue: "
+        if "spotlight-newsletter" in labels:
+                return DiveEmailTypes.Spotlight
         if list_name.endswith("Weekender") or \
                 name.startswith("Newsletter Weekly Roundup"):
             return DiveEmailTypes.Weekender
@@ -86,8 +96,11 @@ class DiveSailthruClient(SailthruClient):
             dive_email_type = self._infer_dive_email_type(campaign)
 
         list_name = campaign.get('list', '')
-        if dive_email_type == DiveEmailTypes.Blast and list_name.lower().endswith("blast list"):
-            return re.sub(r' [Bb]last [Ll]ist$', '', list_name)
+        if (dive_email_type in [DiveEmailTypes.Blast, DiveEmailTypes.Spotlight]) and list_name.lower().endswith("blast list"):
+                # The Utility Dive Spotlight goes out to a special
+                # blast list: "Utility Dive and sub pubs Blast List"
+                # This regex handles that as well as normal blast lists
+                return re.sub(r'( and sub pubs)? [Bb]last [Ll]ist$', '', list_name)
         if dive_email_type == DiveEmailTypes.Weekender and list_name.lower().endswith("weekender"):
             return re.sub(r' [Ww]eekender$', '', list_name)
         if dive_email_type == DiveEmailTypes.Newsletter:
@@ -191,6 +204,7 @@ class DiveSailthruClient(SailthruClient):
                 c['dive_brand'] = self._infer_dive_publication(c)
                 # Automatically "fix" unicode problems.
                 # TODO: Not sure this is right.
+                c['name'] = c['name'].encode('utf-8', errors='replace')
                 c['subject'] = c['subject'].encode('utf-8', errors='replace')
                 campaigns.append(c)
 
@@ -410,9 +424,30 @@ class DiveSailthruClient(SailthruClient):
 
     def api_get(self, *args, **kwargs):
         """
-        Wrapper around api_get to raise exception if there is any problem.
+        Wrapper around api_get to raise exception if there is any problem. And
+        to add some simple retry logic for Connection Timeout errors. We encountered
+        these timeout errors in the wild in some small percentage of stats_blast API
+        calls. (See TECH-1736)
         """
-        response = super(DiveSailthruClient, self).api_get(*args, **kwargs)
+        for _ in range(3):
+            try:
+                response = super(DiveSailthruClient, self).api_get(*args, **kwargs)
+                break
+            except SailthruClientError as e:
+                if 'ConnectTimeoutError' in str(e):
+                    # We want to retry connection timeout errors only. Sailthru client
+                    #   smushes the original exception from Requests into a string arg
+                    #   so we need to test for it with string matching here.
+                    pass
+                else:
+                    # If it wasn't a ConnectTimeoutError than don't retry
+                    raise
+        else:
+            # If we got here we exceeded the max number of retries
+            raise
+
+        # At this point we have a response from the server but we still need to check
+        #   if the response itself is marked as an error
         self.raise_exception_if_error(response)
 
         return response
