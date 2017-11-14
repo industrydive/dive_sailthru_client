@@ -55,7 +55,7 @@ class DiveSailthruClient(SailthruClient):
         labels = campaign.get('labels', [])
         name = campaign.get('name', '')
         list_name = campaign.get('list', '')
-        subject = campaign.get('subject', '').encode('utf-8', errors='replace')
+        subject = campaign.get('subject', '')
         if "Blast" in labels or '-blast-' in name:
             return DiveEmailTypes.Blast
         if "Welcome Series" in labels:
@@ -204,8 +204,8 @@ class DiveSailthruClient(SailthruClient):
                 c['dive_brand'] = self._infer_dive_publication(c)
                 # Automatically "fix" unicode problems.
                 # TODO: Not sure this is right.
-                c['name'] = c['name'].encode('utf-8', errors='replace')
-                c['subject'] = c['subject'].encode('utf-8', errors='replace')
+                c['name'] = c['name']
+                c['subject'] = c['subject']
                 campaigns.append(c)
 
             page_start_date = page_end_date

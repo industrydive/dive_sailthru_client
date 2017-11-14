@@ -300,6 +300,30 @@ class TestDiveSailthruClient(TestCase):
         self.assertEqual(cm.exception.message, 'this is the error (1234)')
         self.assertTrue(mock_response.get_error.called)
 
+    @patch('dive_sailthru_client.client.DiveSailthruClient.api_get')
+    def test_unicode_get_campaign(self, mock_api_get):
+        response = {
+                    'blast_id': 4069274,
+                    'email_count': 22671,
+                    'labels': [],
+                    'list': 'Education Dive: Higher Ed',
+                    'mode': 'email',
+                    'modify_time': 'Wed, 25 Mar 2015 10:02:08 -0400',
+                    'modify_user': 'xxx@industrydive.com',
+                    'name': 'Issue: 2015-03-25 Higher Ed Education Dive Newsletter',
+                    'public_url': 'link.divenewsletter.com/public/4069274',
+                    'schedule_time': 'Wed, 25 Mar 2015 10:17:08 -0400',
+                    'sent_count': 22670,
+                    'start_time': 'Wed, 25 Mar 2015 10:18:02 -0400',
+                    'status': 'sent',
+                    'subject': "Mar. 25 - Jones' ouster could cost Ole Miss $20M grant"
+                }
+        mock_api_get.return_value = {'json': response}
+        campaign = self.sailthru_client.get_campaign_data(123)
+        print (campaign)
+
+
+
     @patch('dive_sailthru_client.client.DiveSailthruClient')
     @patch('sailthru.sailthru_response.SailthruResponse')
     def test_get_campaigns_in_range(self, mock_response, mock_client):
