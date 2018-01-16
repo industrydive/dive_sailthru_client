@@ -161,6 +161,36 @@ class DiveSailthruClient(SailthruClient):
           'status': 'sent',
           'subject': 'Utilities: Is your grid secure?'}
         """
+        output_prototype = {
+          'abtest': 'final',
+          'abtest_segment': 'Final',
+          'abtest_winner_metric': 'beacon',
+          'blast_id': 4889393,
+          'copy_blast_id': 4889394,
+          'email_count': 16796,
+          'final_blast_id': 4889393,
+          'labels': ['Blast'],
+          'list': 'Utility Dive: Solar blast list',
+          'mode': 'email',
+          'modify_time': datetime.datetime.now(),  # 'Thu, 06 Aug 2015 15:28:17 -0400',
+          'modify_user': 'xxx@industrydive.com',
+          'name': 'ABB Survey recruitment-blast-UD Solar-Aug6',
+          'schedule_time': 'Thu, 06 Aug 2015 15:28:00 -0400',
+          'sent_count': 16796,
+          'start_time': 'Thu, 06 Aug 2015 15:28:17 -0400',
+          'stats': { 'total': { 'beacon_click': 38,
+                                'beacon_noclick': 2521,
+                                'click_multiple_urls': 12,
+                                'click_total': 165,
+                                'count': 16796,
+                                'hardbounce': 1,
+                                'nobeacon_click': 59,
+                                'open_total': 3404,
+                                'optout': 9,
+                                'softbounce': 331}},
+          'status': 'sent',
+          'subject': 'Utilities: Is your grid secure?'
+        }
         campaigns = []
         # Sailthru API does not appear able to handle requests for large
         # numbers of campaigns, so we somewhat arbitrarily break down requests
