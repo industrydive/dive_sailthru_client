@@ -6,6 +6,7 @@ from sailthru.sailthru_error import SailthruClientError
 import datetime
 import time
 import re
+import logging
 
 # TODO: enforce structure on returned dicts -- make all keys present even if
 # value is zero. Maybe replace with class.
@@ -421,6 +422,18 @@ class DiveSailthruClient(SailthruClient):
         self.raise_exception_if_error(response)
 
         return response
+
+    def _api_request(self, action, data, request_type):
+        """
+        Make Request to Sailthru API with given data and api key, format and signature hash
+        """
+        logging.info('REQUEST_TYPE: %s' % request_type)
+        if 'file' in data:
+            file_data = {'file': data['file']}
+        else:
+            file_data = None
+
+        return self._http_request(action, self._prepare_json_payload(data), request_type, file_data)
 
     def api_get(self, *args, **kwargs):
         """
