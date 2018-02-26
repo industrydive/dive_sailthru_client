@@ -386,6 +386,19 @@ class DiveSailthruClient(SailthruClient):
             job_params['fields']['vars'] = {}
             for v in sailthru_vars:
                 job_params['fields']['vars'][v] = 1
+        job_result_json = self.api_post('job', job_params, binary_data_param='file').json
+        job_id = job_result_json['job_id']
+        if block_until_complete:
+            job_result_json = self._block_until_job_complete(job_id)
+        if job_result_json['status'] not in ('pending', 'completed'):
+            raise SailthruApiError("Job '%s' ended with unexpected status '%s'", job_id, job_result_json['status'])
+        return job_result_json
+
+    def update_job(self, update_file, block_until_complete=True):
+        job_params = {
+            'job': 'update',
+            'file': update_file
+        }
         job_result_json = self.api_post('job', job_params).json
         job_id = job_result_json['job_id']
         if block_until_complete:
