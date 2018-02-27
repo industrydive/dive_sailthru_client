@@ -5,6 +5,7 @@ import os
 import datetime
 import tempfile
 
+
 @attr('external')
 class TestDiveSailthruClientExternalIntegration(TestCase):
     def setUp(self):
@@ -31,10 +32,11 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
         return json["vars"].get(key)
 
     def _set_user_var(self, userid, key, value):
-        response = self.sailthru_client.save_user(userid, options={"vars":{key: value}}).response
+        response = self.sailthru_client.save_user(userid, options={"vars": {key: value}}).response
         self.assertTrue(response.ok)
 
     def test_get_set_var(self):
+        """ Make sure the _get_user_var and _set_user_var functions work with the API as expected """
         new_value = str(datetime.datetime.now())
         value = self._get_user_var(self.test_email, self.test_var_key)
         self.assertNotEqual(value, new_value)
@@ -43,14 +45,14 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
         self.assertEqual(value, new_value)
 
     def test_update_job(self):
-        client = self.sailthru_client
-
+        """ Test that the update_job() function actually updates something """
         # first set a known value to the variable using set_var
         start_value = "start value %s" % datetime.datetime.now()
         self._set_user_var(self.test_email, self.test_var_key, start_value)
 
         # create temp file and stick our update string in it, then call update_job with the
-        #   temp file's name. It will be autodeleted when it is closed.
+        #   temp file's name. we set delete=False so that it isn't auto deleted when f.close()
+        #   is called.
         f = tempfile.NamedTemporaryFile(delete=False)
         try:
             updated_value = "updated value %s" % datetime.datetime.now()
@@ -59,7 +61,7 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
             f.close()
             self.sailthru_client.update_job(f.name)
         finally:
-            # clean up our temp file even if there were exceptions thrown
+            # since we set delete=False we need to clean up after ourselves manually
             os.unlink(f.name)
         # now check if it really updated
         test_updated_var = self._get_user_var(self.test_email, self.test_var_key)
