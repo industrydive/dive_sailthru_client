@@ -4,6 +4,7 @@ from dive_sailthru_client.client import DiveSailthruClient
 import os
 import datetime
 import tempfile
+import StringIO
 
 
 @attr('external')
@@ -44,7 +45,7 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
         value = self._get_user_var(self.test_email, self.test_var_key)
         self.assertEqual(value, new_value)
 
-    def test_update_job(self):
+    def test_update_job_with_filename(self):
         """ Test that the update_job() function actually updates something """
         # first set a known value to the variable using set_var
         start_value = "start value %s" % datetime.datetime.now()
@@ -59,10 +60,24 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
             update_line = '{"id":"%s", "vars":{"%s":"%s"}}\n' % (self.test_email, self.test_var_key, updated_value)
             f.write(update_line)
             f.close()
-            self.sailthru_client.update_job(f.name)
+            self.sailthru_client.update_job(update_file_name=f.name)
         finally:
             # since we set delete=False we need to clean up after ourselves manually
             os.unlink(f.name)
+        # now check if it really updated
+        test_updated_var = self._get_user_var(self.test_email, self.test_var_key)
+        self.assertEqual(test_updated_var, updated_value)
+
+    def test_update_job_with_stream(self):
+        """ Test that the update_job() function actually updates something """
+        # first set a known value to the variable using set_var
+        start_value = "start value %s" % datetime.datetime.now()
+        self._set_user_var(self.test_email, self.test_var_key, start_value)
+        # now let's set up the update "file" and turn it into a stream we can pass to API
+        updated_value = "updated value %s" % datetime.datetime.now()
+        update_line = '{"id":"%s", "vars":{"%s":"%s"}}\n' % (self.test_email, self.test_var_key, updated_value)
+        stream = StringIO.StringIO(update_line)
+        self.sailthru_client.update_job(update_file_stream=stream)
         # now check if it really updated
         test_updated_var = self._get_user_var(self.test_email, self.test_var_key)
         self.assertEqual(test_updated_var, updated_value)
