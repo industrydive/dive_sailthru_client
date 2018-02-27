@@ -386,7 +386,7 @@ class DiveSailthruClient(SailthruClient):
             job_params['fields']['vars'] = {}
             for v in sailthru_vars:
                 job_params['fields']['vars'][v] = 1
-        job_result_json = self.api_post('job', job_params, binary_data_param='file').json
+        job_result_json = self.api_post('job', job_params).json
         job_id = job_result_json['job_id']
         if block_until_complete:
             job_result_json = self._block_until_job_complete(job_id)
