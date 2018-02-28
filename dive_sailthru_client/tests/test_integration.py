@@ -19,11 +19,6 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
         self.test_email = 'eli+sailthru-client-integration-test@industrydive.com'
         self.test_var_key = "sailthruclienttestvalue"
 
-    # def test_export_list(self):
-    #     client = self.sailthru_client
-    #     result = client.export_list(list_name="Eli")
-    #     self.assertEqual(result['status'], "completed")
-
     def _get_user_var(self, userid, key):
         response = self.sailthru_client.get_user(userid).response
         self.assertTrue(response.ok)
