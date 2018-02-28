@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="dive_sailthru_client",
-    version="0.0.13-dev",
+    version="0.0.14",
     description="Industry Dive abstraction of the Sailthru API client",
     author='Industry Dive',
     author_email='tech.team@industrydive.com',
@@ -12,6 +12,7 @@ setup(
     packages=['dive_sailthru_client'],
     install_requires=[
         'sailthru-client==2.3.3',
+        # Note that sailthru-client installs requests and simplejson
     ],
     test_suite='nose.collector',
     tests_require=['nose', 'mock']
