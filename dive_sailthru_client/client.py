@@ -398,7 +398,7 @@ class DiveSailthruClient(SailthruClient):
         """
         Perform an 'update' job request, which bulk updates changes to a list of users typically
         in a file in JSON-lines format. See https://getstarted.sailthru.com/developers/api/job/#update
-        Should pass in a file name or a stream but not both!
+        Should pass in a file name (which will be opened for you) or a file-like object but not both!
         @param update_file_name: file name of update file to send; should be None if update_file_stream is set
         @param update_file_stream: an already opened stream to a file-link object of stuff to update
         @param block_until_complete: whether to simply request the job and return or to block until it's done
