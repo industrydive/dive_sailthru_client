@@ -34,6 +34,7 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
 
     def test_get_set_var(self):
         """ Make sure the _get_user_var and _set_user_var functions work with the API as expected """
+        # new_value = 'updated value %s' % datetime.datetime.now()
         new_value = str(datetime.datetime.now())
         value = self._get_user_var(self.test_email, self.test_var_key)
         self.assertNotEqual(value, new_value)
