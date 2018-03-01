@@ -5,7 +5,7 @@ import os
 import datetime
 import tempfile
 import StringIO
-from datetime import date
+import time
 
 
 @attr('external')
@@ -38,20 +38,22 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
         value = self._get_user_var(self.test_email, self.test_var_key)
         self.assertNotEqual(value, new_value)
         self._set_user_var(self.test_email, self.test_var_key, new_value)
+        # adding sleep to give Sailthru's system to catch up
+        time.sleep(5)
         value = self._get_user_var(self.test_email, self.test_var_key)
         self.assertEqual(value, new_value)
 
     def test_update_job_with_filename(self):
         """ Test that the update_job() function actually updates something """
         # first set a known value to the variable using set_var
-        start_value = "start value %s" % date.today()
+        start_value = "start value %s" % datetime.datetime.now()
         self._set_user_var(self.test_email, self.test_var_key, start_value)
         # create temp file and stick our update string in it, then call update_job with the
         #   temp file's name. we set delete=False so that it isn't auto deleted when f.close()
         #   is called.
         f = tempfile.NamedTemporaryFile(delete=False)
         try:
-            updated_value = "updated value %s" % date.today()
+            updated_value = "updated value %s" % datetime.datetime.now()
             update_line = '{"id":"%s", "key": "email", "vars":{"%s":"%s"}}\n' % \
                           (self.test_email, self.test_var_key, updated_value)
             f.write(update_line)
@@ -60,8 +62,9 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
         finally:
             # since we set delete=False we need to clean up after ourselves manually
             os.unlink(f.name)
+        # adding sleep to give Sailthru's system to catch up
+        time.sleep(5)
         # now check if it really updated
-        # time.sleep(60)
         test_updated_var = self._get_user_var(self.test_email, self.test_var_key)
         self.assertEqual(test_updated_var, updated_value)
 
