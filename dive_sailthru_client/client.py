@@ -395,7 +395,7 @@ class DiveSailthruClient(SailthruClient):
             raise SailthruApiError("Job '%s' ended with unexpected status '%s'", job_id, job_result_json['status'])
         return job_result_json
 
-    def update_job(self, update_file_name=None, update_file_stream=None, block_until_complete=True):
+    def  update_job(self, update_file_name=None, update_file_stream=None, block_until_complete=True):
         """
         Perform an 'update' job request, which bulk updates changes to a list of users typically
         in a file in JSON-lines format. See https://getstarted.sailthru.com/developers/api/job/#update
@@ -458,18 +458,6 @@ class DiveSailthruClient(SailthruClient):
         self.raise_exception_if_error(response)
 
         return response
-
-    def _api_request(self, action, data, request_type):
-        """
-        Make Request to Sailthru API with given data and api key, format and signature hash
-        """
-        logging.info('REQUEST_TYPE: %s' % request_type)
-        if 'file' in data:
-            file_data = {'file': data['file']}
-        else:
-            file_data = None
-
-        return self._http_request(action, self._prepare_json_payload(data), request_type, file_data)
 
     def api_get(self, *args, **kwargs):
         """

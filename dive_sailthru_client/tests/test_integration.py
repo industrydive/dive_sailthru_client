@@ -5,9 +5,9 @@ import os
 import datetime
 import tempfile
 import StringIO
-import unicodedata
-import time
 from datetime import date
+import time
+
 
 @attr('external')
 class TestDiveSailthruClientExternalIntegration(TestCase):
@@ -35,7 +35,6 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
 
     def test_get_set_var(self):
         """ Make sure the _get_user_var and _set_user_var functions work with the API as expected """
-        # new_value = 'updated value %s' % datetime.datetime.now()
         new_value = str(datetime.datetime.now())
         value = self._get_user_var(self.test_email, self.test_var_key)
         self.assertNotEqual(value, new_value)
@@ -46,18 +45,15 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
     def test_update_job_with_filename(self):
         """ Test that the update_job() function actually updates something """
         # first set a known value to the variable using set_var
-        start_value = "start value %s" % datetime.datetime.now()
+        start_value = "start value %s" % date.today()
         self._set_user_var(self.test_email, self.test_var_key, start_value)
-
         # create temp file and stick our update string in it, then call update_job with the
         #   temp file's name. we set delete=False so that it isn't auto deleted when f.close()
         #   is called.
         f = tempfile.NamedTemporaryFile(delete=False)
         try:
-            updated_value = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            updated_value = datetime.datetime.strptime(updated_value, '%Y-%m-%d %H:%M:%S')
-            updated_value = "start value %s" % updated_value
-            update_line = '{"id":"%s", "vars":{"%s":"%s"}}\n' % (self.test_email, self.test_var_key, updated_value)
+            updated_value = "updated value %s" % date.today()
+            update_line = '{"id":"%s", "key": "email", "vars":{"%s":"%s"}}\n' % (self.test_email, self.test_var_key, updated_value)
             f.write(update_line)
             f.close()
             self.sailthru_client.update_job(update_file_name=f.name)
@@ -65,10 +61,9 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
             # since we set delete=False we need to clean up after ourselves manually
             os.unlink(f.name)
         # now check if it really updated
+        # time.sleep(60)
         test_updated_var = self._get_user_var(self.test_email, self.test_var_key)
-        test_updated_var = unicodedata.normalize('NFKD', test_updated_var).encode('ascii', 'ignore')
-        test_updated_var = datetime.datetime.strptime(test_updated_var[12:], '%Y-%m-%d %H:%M:%S.%f').strftime('%Y-%m-%d %H:%M:%S')
-        test_updated_var = 'start value %s' % test_updated_var
+        print('after update: %s' % test_updated_var)
         self.assertEqual(test_updated_var, updated_value)
 
     def test_update_job_with_stream(self):
