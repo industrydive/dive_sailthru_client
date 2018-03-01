@@ -6,7 +6,6 @@ import datetime
 import tempfile
 import StringIO
 from datetime import date
-import time
 
 
 @attr('external')
@@ -53,7 +52,8 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
         f = tempfile.NamedTemporaryFile(delete=False)
         try:
             updated_value = "updated value %s" % date.today()
-            update_line = '{"id":"%s", "key": "email", "vars":{"%s":"%s"}}\n' % (self.test_email, self.test_var_key, updated_value)
+            update_line = '{"id":"%s", "key": "email", "vars":{"%s":"%s"}}\n' % \
+                          (self.test_email, self.test_var_key, updated_value)
             f.write(update_line)
             f.close()
             self.sailthru_client.update_job(update_file_name=f.name)

@@ -6,7 +6,6 @@ from sailthru.sailthru_error import SailthruClientError
 import datetime
 import time
 import re
-import logging
 
 # TODO: enforce structure on returned dicts -- make all keys present even if
 # value is zero. Maybe replace with class.
@@ -395,7 +394,7 @@ class DiveSailthruClient(SailthruClient):
             raise SailthruApiError("Job '%s' ended with unexpected status '%s'", job_id, job_result_json['status'])
         return job_result_json
 
-    def  update_job(self, update_file_name=None, update_file_stream=None, block_until_complete=True):
+    def update_job(self, update_file_name=None, update_file_stream=None, block_until_complete=True):
         """
         Perform an 'update' job request, which bulk updates changes to a list of users typically
         in a file in JSON-lines format. See https://getstarted.sailthru.com/developers/api/job/#update
