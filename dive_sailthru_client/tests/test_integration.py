@@ -63,7 +63,6 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
         # now check if it really updated
         # time.sleep(60)
         test_updated_var = self._get_user_var(self.test_email, self.test_var_key)
-        print('after update: %s' % test_updated_var)
         self.assertEqual(test_updated_var, updated_value)
 
     def test_update_job_with_stream(self):
