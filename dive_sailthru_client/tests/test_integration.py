@@ -6,8 +6,7 @@ import datetime
 import tempfile
 import StringIO
 import unicodedata
-import time
-from datetime import date
+
 
 @attr('external')
 class TestDiveSailthruClientExternalIntegration(TestCase):
@@ -67,7 +66,8 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
         # now check if it really updated
         test_updated_var = self._get_user_var(self.test_email, self.test_var_key)
         test_updated_var = unicodedata.normalize('NFKD', test_updated_var).encode('ascii', 'ignore')
-        test_updated_var = datetime.datetime.strptime(test_updated_var[12:], '%Y-%m-%d %H:%M:%S.%f').strftime('%Y-%m-%d %H:%M:%S')
+        test_updated_var = datetime.datetime.strptime(test_updated_var[12:],
+                                                      '%Y-%m-%d %H:%M:%S.%f').strftime('%Y-%m-%d %H:%M:%S')
         test_updated_var = 'start value %s' % test_updated_var
         self.assertEqual(test_updated_var, updated_value)
 
