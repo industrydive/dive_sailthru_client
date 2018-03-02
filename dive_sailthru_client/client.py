@@ -394,6 +394,42 @@ class DiveSailthruClient(SailthruClient):
             raise SailthruApiError("Job '%s' ended with unexpected status '%s'", job_id, job_result_json['status'])
         return job_result_json
 
+    def update_job(self, update_file_name=None, update_file_stream=None, block_until_complete=True):
+        """
+        Perform an 'update' job request, which bulk updates changes to a list of users typically
+        in a file in JSON-lines format. See https://getstarted.sailthru.com/developers/api/job/#update
+        Should pass in a file name (which will be opened for you) or a file-like object but not both!
+        @param update_file_name: file name of update file to send; should be None if update_file_stream is set
+        @param update_file_stream: an already opened stream to a file-link object of stuff to update
+        @param block_until_complete: whether to simply request the job and return or to block until it's done
+        """
+        job_params = {
+            'job': 'update',
+        }
+        assert not (update_file_name and update_file_stream)
+        if update_file_name:
+            job_params['file'] = update_file_name
+            job_result_json = self.api_post('job', job_params).json
+        else:  # update_file_stream
+            job_result_json = self.api_post_with_binary_stream('job', job_params, update_file_stream).json
+        job_id = job_result_json['job_id']
+        if block_until_complete:
+            job_result_json = self._block_until_job_complete(job_id)
+        if job_result_json['status'] not in ('pending', 'completed'):
+            raise SailthruApiError("Job '%s' ended with unexpected status '%s'", job_id, job_result_json['status'])
+        return job_result_json
+
+    def api_post_with_binary_stream(self, action, data, binary_stream):
+        """
+        A wrapper around _http_request that lets you pass in opened streams and doesn't assume
+        it needs to open() them itself
+        """
+        request_type = 'POST'
+        file_data = {'file': binary_stream}
+        response = self._http_request(action, self._prepare_json_payload(data), request_type, file_data)
+        self.raise_exception_if_error(response)
+        return response
+
     def _block_until_job_complete(self, job_id, seconds_between_checks=1, max_wait_seconds=600):
         """ returns result of the job; raises exception if job not complete in max_wait_seconds """
         max_iterations = int(max_wait_seconds / seconds_between_checks) + 1
