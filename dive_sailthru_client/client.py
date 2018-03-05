@@ -430,7 +430,7 @@ class DiveSailthruClient(SailthruClient):
         self.raise_exception_if_error(response)
         return response
 
-    def _block_until_job_complete(self, job_id, seconds_between_checks=1, max_wait_seconds=600):
+    def _block_until_job_complete(self, job_id, seconds_between_checks=1, max_wait_seconds=21600):
         """ returns result of the job; raises exception if job not complete in max_wait_seconds """
         max_iterations = int(max_wait_seconds / seconds_between_checks) + 1
         for _ in range(max_iterations):
