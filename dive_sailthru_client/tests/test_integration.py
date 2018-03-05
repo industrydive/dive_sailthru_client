@@ -5,7 +5,6 @@ import os
 import datetime
 import tempfile
 import StringIO
-import time
 
 
 @attr('external')
@@ -38,13 +37,11 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
         value = self._get_user_var(self.test_email, self.test_var_key)
         self.assertNotEqual(value, new_value)
         self._set_user_var(self.test_email, self.test_var_key, new_value)
-        # adding sleep to give Sailthru's system to catch up
-        time.sleep(5)
         value = self._get_user_var(self.test_email, self.test_var_key)
         self.assertEqual(value, new_value)
 
     def test_update_job_with_filename(self):
-        """ Test that the update_job() function actually updates something """
+        """ Test that the update_job() function actually updates from a filename """
         # first set a known value to the variable using set_var
         start_value = "start value %s" % datetime.datetime.now()
         self._set_user_var(self.test_email, self.test_var_key, start_value)
@@ -62,14 +59,12 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
         finally:
             # since we set delete=False we need to clean up after ourselves manually
             os.unlink(f.name)
-        # adding sleep to give Sailthru's system to catch up
-        time.sleep(5)
         # now check if it really updated
         test_updated_var = self._get_user_var(self.test_email, self.test_var_key)
         self.assertEqual(test_updated_var, updated_value)
 
     def test_update_job_with_stream(self):
-        """ Test that the update_job() function actually updates something """
+        """ Test that the update_job() function actually updates from a opened file-like object """
         # first set a known value to the variable using set_var
         start_value = "start value %s" % datetime.datetime.now()
         self._set_user_var(self.test_email, self.test_var_key, start_value)
