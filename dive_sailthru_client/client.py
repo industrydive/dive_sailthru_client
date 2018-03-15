@@ -1,8 +1,12 @@
-from sailthru.sailthru_client import SailthruClient
+from sailthru import sailthru_client
 from errors import SailthruApiError
 # We need the SailthruClientError to be able to handle retries in api_get
 from sailthru.sailthru_error import SailthruClientError
-
+# for patched_sailthru_http_request
+from sailthru.sailthru_response import SailthruResponse
+import requests
+import platform
+# other libraries
 import datetime
 import time
 import re
@@ -24,7 +28,33 @@ class DiveEmailTypes:
     Spotlight = "spotlight"
 
 
-class DiveSailthruClient(SailthruClient):
+# The following function overrides upstream client behavior to add custom HTTP timeout per TECH-3849
+def timeout_patched_sailthru_http_request(url, data, method, file_data=None, timeout=60):
+    """
+    Perform an HTTP GET / POST / DELETE request
+
+    This is a override of upstream sailthru_http_request with `timeout` added as a parameter and
+    with the default set to 60 instead of 10.
+    """
+    data = sailthru_client.flatten_nested_hash(data)
+    method = method.upper()
+    params, data = (None, data) if method == 'POST' else (data, None)
+
+    try:
+        headers = {'User-Agent': 'Sailthru API Python Client %s; Python Version: %s' % ('2.3.3-patched', platform.python_version())}
+        response = requests.request(method, url, params=params, data=data, files=file_data, headers=headers, timeout=timeout)
+        return SailthruResponse(response)
+    except requests.HTTPError as e:
+        raise SailthruClientError(str(e))
+    except requests.RequestException as e:
+        raise SailthruClientError(str(e))
+
+
+# Now override the sailthru_http_request utility function in the superclass
+sailthru_client.sailthru_http_request = timeout_patched_sailthru_http_request
+
+
+class DiveSailthruClient(sailthru_client.SailthruClient):
     """
     Our Sailthru client implementation that adds our own concepts.
 
