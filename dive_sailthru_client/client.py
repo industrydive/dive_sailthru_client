@@ -4,6 +4,7 @@ from errors import SailthruApiError
 from sailthru.sailthru_error import SailthruClientError
 # for patched_sailthru_http_request
 from sailthru.sailthru_response import SailthruResponse
+from sailthru.sailthru_http import flatten_nested_hash
 import requests
 import platform
 # other libraries
@@ -36,7 +37,7 @@ def timeout_patched_sailthru_http_request(url, data, method, file_data=None, tim
     This is a override of upstream sailthru_http_request with `timeout` added as a parameter and
     with the default set to 60 instead of 10.
     """
-    data = sailthru_client.flatten_nested_hash(data)
+    data = flatten_nested_hash(data)
     method = method.upper()
     params, data = (None, data) if method == 'POST' else (data, None)
 
