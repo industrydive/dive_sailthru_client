@@ -29,7 +29,10 @@ class DiveEmailTypes:
     Spotlight = "spotlight"
 
 
-# The following function overrides upstream client behavior to add custom HTTP timeout per TECH-3849
+# There is some skullduggery below in order to override the hardcoded 10 second timeout on HTTP requests
+# per TECH-3849. First we copy/paste the sailthru_http_request() function that originally exists here:
+# https://github.com/sailthru/sailthru-python-client/blob/521fdaa30890a29da8fbb02726e7d22ed174b878/sailthru/sailthru_http.py#L30
+# Then we modify it to have a default timeout of 60 seconds and additionally to accept a timeout parameter
 def timeout_patched_sailthru_http_request(url, data, method, file_data=None, timeout=60):
     """
     Perform an HTTP GET / POST / DELETE request
@@ -51,11 +54,15 @@ def timeout_patched_sailthru_http_request(url, data, method, file_data=None, tim
         raise SailthruClientError(str(e))
 
 
-# Now override the sailthru_http_request utility function in the superclass
+# Now we need to patch the altered sailthru_http_request into a place where even functions defined in the upstream
+# SailthruClient class that call it will call our new altered version. In the upstream class, the sailthru_http_request()
+# function is `import`ed into the sailthru_client module (not the class), so we need to import the sailthru_client module
+# and then redefine the sailthru_http_request that it had imported to instead point to our version. Then later we
+# have to make sure we are subclassing SailthruClient by refering to it specifically as sailthru_client.SailthruClient
 sailthru_client.sailthru_http_request = timeout_patched_sailthru_http_request
 
 
-class DiveSailthruClient(sailthru_client.SailthruClient):
+class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sailthru_client.SailthruClient for patched HTTP timeout
     """
     Our Sailthru client implementation that adds our own concepts.
 
