@@ -1,5 +1,5 @@
 from sailthru.sailthru_client import SailthruClient
-from errors import SailthruApiError
+from .errors import SailthruApiError
 # We need the SailthruClientError to be able to handle retries in api_get
 from sailthru.sailthru_error import SailthruClientError
 
