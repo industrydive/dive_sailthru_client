@@ -73,7 +73,7 @@ class DiveSailthruClient(SailthruClient):
             return DiveEmailTypes.Newsletter
         if list_name.lower().endswith("blast list"):
             return DiveEmailTypes.Blast
-        if subject.startswith("BREAKING"):
+        if subject.startswith(b"BREAKING"):
             return DiveEmailTypes.BreakingNews
 
         return DiveEmailTypes.Unknown

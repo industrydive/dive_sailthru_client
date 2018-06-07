@@ -297,7 +297,7 @@ class TestDiveSailthruClient(TestCase):
         with self.assertRaises(SailthruApiError) as cm:
             self.sailthru_client.raise_exception_if_error(mock_response)
 
-        self.assertEqual(cm.exception.message, 'this is the error (1234)')
+        self.assertEqual(str(cm.exception), 'this is the error (1234)')
         self.assertTrue(mock_response.get_error.called)
 
     @patch('dive_sailthru_client.client.DiveSailthruClient')
