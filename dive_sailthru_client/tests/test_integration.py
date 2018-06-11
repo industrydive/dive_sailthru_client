@@ -5,6 +5,7 @@ import os
 import datetime
 import tempfile
 import io
+import time
 
 
 @attr('external')
@@ -37,6 +38,10 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
         value = self._get_user_var(self.test_email, self.test_var_key)
         self.assertNotEqual(value, new_value)
         self._set_user_var(self.test_email, self.test_var_key, new_value)
+        # We take a brief pause here to let Sailthru catch up. Sailthru API calls
+        # are only *eventually* consistent so sometimes you write a value and then
+        # read it back and still get the old value.
+        time.sleep(1)
         value = self._get_user_var(self.test_email, self.test_var_key)
         self.assertEqual(value, new_value)
 
