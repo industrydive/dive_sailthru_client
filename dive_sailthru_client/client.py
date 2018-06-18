@@ -1,5 +1,5 @@
 from sailthru import sailthru_client
-from errors import SailthruApiError
+from .errors import SailthruApiError
 # We need the SailthruClientError to be able to handle retries in api_get
 from sailthru.sailthru_error import SailthruClientError
 # for patched_sailthru_http_request
@@ -111,7 +111,7 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
             return DiveEmailTypes.Newsletter
         if list_name.lower().endswith("blast list"):
             return DiveEmailTypes.Blast
-        if subject.startswith("BREAKING"):
+        if subject.startswith(b"BREAKING"):
             return DiveEmailTypes.BreakingNews
 
         return DiveEmailTypes.Unknown

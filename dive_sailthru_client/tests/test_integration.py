@@ -4,7 +4,7 @@ from dive_sailthru_client.client import DiveSailthruClient
 import os
 import datetime
 import tempfile
-import StringIO
+import io
 import time
 
 
@@ -58,7 +58,7 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
             updated_value = "updated value %s" % datetime.datetime.now()
             update_line = '{"id":"%s", "key": "email", "vars":{"%s":"%s"}}\n' % \
                           (self.test_email, self.test_var_key, updated_value)
-            f.write(update_line)
+            f.write(update_line.encode("utf-8"))
             f.close()
             self.sailthru_client.update_job(update_file_name=f.name)
         finally:
@@ -75,8 +75,8 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
         self._set_user_var(self.test_email, self.test_var_key, start_value)
         # now let's set up the update "file" and turn it into a stream we can pass to API
         updated_value = "updated value %s" % datetime.datetime.now()
-        update_line = '{"id":"%s", "vars":{"%s":"%s"}}\n' % (self.test_email, self.test_var_key, updated_value)
-        stream = StringIO.StringIO(update_line)
+        update_line = u'{"id":"%s", "vars":{"%s":"%s"}}\n' % (self.test_email, self.test_var_key, updated_value)
+        stream = io.StringIO(update_line)
         self.sailthru_client.update_job(update_file_stream=stream)
         # now check if it really updated
         test_updated_var = self._get_user_var(self.test_email, self.test_var_key)
