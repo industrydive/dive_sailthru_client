@@ -1,0 +1,28 @@
+version: 2
+jobs:
+  build:
+    machine:
+      enabled: true
+      # https://circleci.com/docs/2.0/executor-types/#using-machine
+      # docker 17.03.0-ce, docker-compose 1.9.0
+      image: circleci/classic:latest
+    working_directory: ~/corporate-site
+    steps:
+      - checkout
+
+      - run:
+          name: display docker info
+          command: |
+            docker info
+
+      - run:
+          name: run tests
+          command: |
+            make pythonqa
+            make test
+
+      - deploy:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              git config user.email "tech.team@industrydive.com" && git config user.name "Robert Dive" && git tag -a v$(python setup.py --version) -m "$CIRCLE_BUILD_URL" && git push --tags
+            fi
