@@ -302,7 +302,7 @@ class TestDiveSailthruClient(TestCase):
 
     @patch('sailthru.sailthru_response.SailthruResponse')
     @patch('sailthru.sailthru_response.SailthruResponseError')
-    def test_raise_exception_if_error(self, mock_response, mock_error):
+    def test_raise_exception_if_error_for_email_related_errors(self, mock_response, mock_error):
         """
         Test that an error of one of the specific user-email-related types raises a SailthruUserEmailError
         See the list at https://getstarted.sailthru.com/developers/api-basics/responses/

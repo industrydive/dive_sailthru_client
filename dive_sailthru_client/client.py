@@ -15,7 +15,8 @@ import re
 # TODO: enforce structure on returned dicts -- make all keys present even if
 # value is zero. Maybe replace with class.
 
-USER_EMAIL_ERROR_CODES =  [11, 32, 33, 34, 35, 37]
+USER_EMAIL_ERROR_CODES = [11, 32, 33, 34, 35, 37]
+
 
 class DiveEmailTypes:
     """
@@ -104,7 +105,7 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
         # as that would also be valid
         # since a spotlight's name property also starts with "Issue: "
         if "spotlight-newsletter" in labels:
-                return DiveEmailTypes.Spotlight
+            return DiveEmailTypes.Spotlight
         if list_name.endswith("Weekender") or \
                 name.startswith("Newsletter Weekly Roundup"):
             return DiveEmailTypes.Weekender
@@ -135,11 +136,12 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
             dive_email_type = self._infer_dive_email_type(campaign)
 
         list_name = campaign.get('list', '')
-        if (dive_email_type in [DiveEmailTypes.Blast, DiveEmailTypes.Spotlight]) and list_name.lower().endswith("blast list"):
-                # The Utility Dive Spotlight goes out to a special
-                # blast list: "Utility Dive and sub pubs Blast List"
-                # This regex handles that as well as normal blast lists
-                return re.sub(r'( and sub pubs)? [Bb]last [Ll]ist$', '', list_name)
+        if (dive_email_type in [DiveEmailTypes.Blast, DiveEmailTypes.Spotlight]) and list_name.lower().endswith(
+                "blast list"):
+            # The Utility Dive Spotlight goes out to a special
+            # blast list: "Utility Dive and sub pubs Blast List"
+            # This regex handles that as well as normal blast lists
+            return re.sub(r'( and sub pubs)? [Bb]last [Ll]ist$', '', list_name)
         if dive_email_type == DiveEmailTypes.Weekender and list_name.lower().endswith("weekender"):
             return re.sub(r' [Ww]eekender$', '', list_name)
         if dive_email_type == DiveEmailTypes.Newsletter:
