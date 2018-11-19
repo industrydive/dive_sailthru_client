@@ -1,5 +1,5 @@
 from sailthru import sailthru_client
-from .errors import SailthruApiError
+from .errors import SailthruApiError, SailthruUserEmailError
 # We need the SailthruClientError to be able to handle retries in api_get
 from sailthru.sailthru_error import SailthruClientError
 # for patched_sailthru_http_request
@@ -15,6 +15,7 @@ import re
 # TODO: enforce structure on returned dicts -- make all keys present even if
 # value is zero. Maybe replace with class.
 
+USER_EMAIL_ERROR_CODES =  [11, 32, 33, 34, 35, 37]
 
 class DiveEmailTypes:
     """
@@ -152,9 +153,14 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
         """
         if not response.is_ok():
             api_error = response.get_error()
-            raise SailthruApiError(
-                "%s (%s)" % (api_error.message, api_error.code)
-            )
+            if api_error.code in USER_EMAIL_ERROR_CODES:
+                raise SailthruUserEmailError(
+                    "%s (%s)" % (api_error.message, api_error.code)
+                )
+            else:
+                raise SailthruApiError(
+                    "%s (%s)" % (api_error.message, api_error.code)
+                )
 
     def get_campaigns_in_range(self, start_date, end_date, list_name=None):
         """

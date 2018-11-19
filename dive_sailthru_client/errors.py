@@ -10,3 +10,11 @@ class SailthruApiError(SailthruClientError):
     """
     # TODO: add accessor for response_error object
     pass
+
+class SailthruUserEmailError(SailthruClientError):
+    """
+    Custom Exception class for errors related to user email being invalid or
+    otherwise not being able to be emailed. A common usage is that the user
+    will stop trying to email when the API returns an error of this class.
+    """
+    pass
