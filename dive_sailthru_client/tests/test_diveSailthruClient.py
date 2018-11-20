@@ -1,5 +1,5 @@
 from unittest import TestCase
-from dive_sailthru_client.client import DiveSailthruClient, DiveEmailTypes
+from dive_sailthru_client.client import DiveSailthruClient, DiveEmailTypes, USER_EMAIL_ERROR_CODES
 from dive_sailthru_client.errors import SailthruApiError, SailthruUserEmailError
 from mock import patch
 from nose.plugins.attrib import attr
@@ -306,28 +306,20 @@ class TestDiveSailthruClient(TestCase):
         """
         Test that an error of one of the specific user-email-related types raises a SailthruUserEmailError
         See the list at https://getstarted.sailthru.com/developers/api-basics/responses/
+        Our definition of the user-email-related errors is in the constant client.USER_EMAIL_ERROR_CODES, used here.
 
         :param mock_response:
         :param mock_error:
         :return:
         """
-        email_errors_lists = [
-            [11, "Invalid Email"],
-            [32, "Email has opted out of delivery from client"],
-            [33, "Email has opted out of delivery from template"],
-            [34, "Email may not be emailed"],
-            [35, "Email is a known hardbounce"],
-            [37, "Email will only accept basic templates"],
-        ]
-
         # set up mock response so it will simulate these errors
         mock_response.is_ok.return_value = False
         mock_response.get_error.return_value = mock_error
 
-        for error in email_errors_lists:
+        for code, message in USER_EMAIL_ERROR_CODES.iteritems():
             with self.assertRaises(SailthruUserEmailError):
-                mock_error.code = error[0]
-                mock_error.message = error[1]
+                mock_error.code = code
+                mock_error.message = message
                 self.sailthru_client.raise_exception_if_error(mock_response)
 
     @patch('dive_sailthru_client.client.DiveSailthruClient')

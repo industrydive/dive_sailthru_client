@@ -15,7 +15,17 @@ import re
 # TODO: enforce structure on returned dicts -- make all keys present even if
 # value is zero. Maybe replace with class.
 
-USER_EMAIL_ERROR_CODES = [11, 32, 33, 34, 35, 37]
+# Definition of the error codes from Sailthru that we consider to be a user/email related error
+# Designed to raise a SailthruUserEmailError to allow for handling of these cases specifically
+# See full list of errors from Sailthru at https://getstarted.sailthru.com/developers/api-basics/responses/
+USER_EMAIL_ERROR_CODES = {
+            11: "Invalid Email",
+            32: "Email has opted out of delivery from client",
+            33: "Email has opted out of delivery from template",
+            34: "Email may not be emailed",
+            35: "Email is a known hardbounce",
+            37: "Email will only accept basic templates",
+}
 
 
 class DiveEmailTypes:
@@ -155,7 +165,7 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
         """
         if not response.is_ok():
             api_error = response.get_error()
-            if api_error.code in USER_EMAIL_ERROR_CODES:
+            if api_error.code in USER_EMAIL_ERROR_CODES.keys():
                 raise SailthruUserEmailError(
                     "%s (%s)" % (api_error.message, api_error.code)
                 )
