@@ -146,8 +146,7 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
             dive_email_type = self._infer_dive_email_type(campaign)
 
         list_name = campaign.get('list', '')
-        if (dive_email_type in [DiveEmailTypes.Blast, DiveEmailTypes.Spotlight]) and list_name.lower().endswith(
-                "blast list"):
+        if (dive_email_type in [DiveEmailTypes.Blast, DiveEmailTypes.Spotlight]) and list_name.lower().endswith("blast list"):
             # The Utility Dive Spotlight goes out to a special
             # blast list: "Utility Dive and sub pubs Blast List"
             # This regex handles that as well as normal blast lists
