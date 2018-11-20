@@ -316,7 +316,7 @@ class TestDiveSailthruClient(TestCase):
         mock_response.is_ok.return_value = False
         mock_response.get_error.return_value = mock_error
 
-        for code, message in USER_EMAIL_ERROR_CODES.iteritems():
+        for code, message in USER_EMAIL_ERROR_CODES.items():
             with self.assertRaises(SailthruUserEmailError):
                 mock_error.code = code
                 mock_error.message = message
