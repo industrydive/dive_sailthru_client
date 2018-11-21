@@ -1,5 +1,5 @@
 from unittest import TestCase
-from dive_sailthru_client.client import DiveSailthruClient, DiveEmailTypes, USER_EMAIL_ERROR_CODES
+from dive_sailthru_client.client import DiveSailthruClient, DiveEmailTypes
 from dive_sailthru_client.errors import SailthruApiError, SailthruUserEmailError
 from mock import patch
 from nose.plugins.attrib import attr
@@ -316,7 +316,7 @@ class TestDiveSailthruClient(TestCase):
         mock_response.is_ok.return_value = False
         mock_response.get_error.return_value = mock_error
 
-        for code, message in USER_EMAIL_ERROR_CODES.items():
+        for code, message in SailthruUserEmailError.USER_EMAIL_ERROR_CODES.items():
             with self.assertRaises(SailthruUserEmailError):
                 mock_error.code = code
                 mock_error.message = message
