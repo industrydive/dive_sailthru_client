@@ -1,6 +1,6 @@
 from unittest import TestCase
 from dive_sailthru_client.client import DiveSailthruClient, DiveEmailTypes
-from dive_sailthru_client.errors import SailthruApiError
+from dive_sailthru_client.errors import SailthruApiError, SailthruUserEmailError
 from mock import patch
 from nose.plugins.attrib import attr
 
@@ -299,6 +299,28 @@ class TestDiveSailthruClient(TestCase):
 
         self.assertEqual(str(cm.exception), 'this is the error (1234)')
         self.assertTrue(mock_response.get_error.called)
+
+    @patch('sailthru.sailthru_response.SailthruResponse')
+    @patch('sailthru.sailthru_response.SailthruResponseError')
+    def test_raise_exception_if_error_for_email_related_errors(self, mock_response, mock_error):
+        """
+        Test that an error of one of the specific user-email-related types raises a SailthruUserEmailError
+        See the list at https://getstarted.sailthru.com/developers/api-basics/responses/
+        Our definition of the user-email-related errors is in the constant client.USER_EMAIL_ERROR_CODES, used here.
+
+        :param mock_response:
+        :param mock_error:
+        :return:
+        """
+        # set up mock response so it will simulate these errors
+        mock_response.is_ok.return_value = False
+        mock_response.get_error.return_value = mock_error
+
+        for code, message in SailthruUserEmailError.USER_EMAIL_ERROR_CODES.items():
+            with self.assertRaises(SailthruUserEmailError):
+                mock_error.code = code
+                mock_error.message = message
+                self.sailthru_client.raise_exception_if_error(mock_response)
 
     @patch('dive_sailthru_client.client.DiveSailthruClient')
     @patch('sailthru.sailthru_response.SailthruResponse')

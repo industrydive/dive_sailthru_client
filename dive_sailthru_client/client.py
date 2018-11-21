@@ -1,5 +1,5 @@
 from sailthru import sailthru_client
-from .errors import SailthruApiError
+from .errors import SailthruApiError, SailthruUserEmailError
 # We need the SailthruClientError to be able to handle retries in api_get
 from sailthru.sailthru_error import SailthruClientError
 # for patched_sailthru_http_request
@@ -103,7 +103,7 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
         # as that would also be valid
         # since a spotlight's name property also starts with "Issue: "
         if "spotlight-newsletter" in labels:
-                return DiveEmailTypes.Spotlight
+            return DiveEmailTypes.Spotlight
         if list_name.endswith("Weekender") or \
                 name.startswith("Newsletter Weekly Roundup"):
             return DiveEmailTypes.Weekender
@@ -135,10 +135,10 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
 
         list_name = campaign.get('list', '')
         if (dive_email_type in [DiveEmailTypes.Blast, DiveEmailTypes.Spotlight]) and list_name.lower().endswith("blast list"):
-                # The Utility Dive Spotlight goes out to a special
-                # blast list: "Utility Dive and sub pubs Blast List"
-                # This regex handles that as well as normal blast lists
-                return re.sub(r'( and sub pubs)? [Bb]last [Ll]ist$', '', list_name)
+            # The Utility Dive Spotlight goes out to a special
+            # blast list: "Utility Dive and sub pubs Blast List"
+            # This regex handles that as well as normal blast lists
+            return re.sub(r'( and sub pubs)? [Bb]last [Ll]ist$', '', list_name)
         if dive_email_type == DiveEmailTypes.Weekender and list_name.lower().endswith("weekender"):
             return re.sub(r' [Ww]eekender$', '', list_name)
         if dive_email_type == DiveEmailTypes.Newsletter:
@@ -152,9 +152,14 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
         """
         if not response.is_ok():
             api_error = response.get_error()
-            raise SailthruApiError(
-                "%s (%s)" % (api_error.message, api_error.code)
-            )
+            if api_error.code in SailthruUserEmailError.USER_EMAIL_ERROR_CODES.keys():
+                raise SailthruUserEmailError(
+                    '%s (%s)' % (api_error.message, api_error.code)
+                )
+            else:
+                raise SailthruApiError(
+                    '%s (%s)' % (api_error.message, api_error.code)
+                )
 
     def get_campaigns_in_range(self, start_date, end_date, list_name=None):
         """
