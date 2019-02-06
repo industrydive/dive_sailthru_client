@@ -27,7 +27,7 @@ class DiveEmailTypes:
     Unknown = "unknown"
     BreakingNews = "breaking"
     Spotlight = "spotlight"
-    Audience  = "audience"  # e.g. Dive-iversary
+    Audience = "audience"  # e.g. Dive-iversary, "Update your profile"
 
 
 # There is some skullduggery below in order to override the hardcoded 10 second timeout on HTTP requests
@@ -104,14 +104,13 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
             return DiveEmailTypes.WelcomeSeries
         elif "Dive-iversary" in subject or "Dive-iversary" in list_name:
             return DiveEmailTypes.Audience
-        elif  "update profile" in list_name:
+        elif "update profile" in list_name:
             return DiveEmailTypes.Audience
         elif "linkedin" in list_name.lower() and "linkedin" in name.lower():
             return DiveEmailTypes.Audience
-        # DiveEmailTypes.Spotlight check must be above DiveEmailTypes.Newsletter check
-        # as that would also be valid
-        # since a spotlight's name property also starts with "Issue: "
         elif "spotlight-newsletter" in labels:
+            # Note that spotlight's name also starts with "Issue: " so this check must
+            # appear before thaat one
             return DiveEmailTypes.Spotlight
         elif list_name.endswith("Weekender") or \
                 name.startswith("Newsletter Weekly Roundup"):
@@ -122,6 +121,8 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
             return DiveEmailTypes.Blast
         elif subject.startswith(b"BREAKING"):
             return DiveEmailTypes.BreakingNews
+        elif list_name == "Supply Chain Dive: Operations" and "Issue" in name:
+            return DiveEmailTypes.Newsletter
         else:
             return DiveEmailTypes.Unknown
 
