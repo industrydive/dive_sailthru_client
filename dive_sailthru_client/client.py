@@ -96,22 +96,19 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
         list_name = campaign.get('list', '')
         subject = campaign.get('subject', '').encode('utf-8', errors='replace').decode('ascii', 'replace')
         # WARNING! Order matters below
-        if "Blast" in labels or '-blast-' in name or \
-                list_name.lower().endswith("blast list"):
-            return DiveEmailTypes.Blast
+        if "spotlight-newsletter" in labels:
+            # Note that spotlight's name also starts with "Issue: " and it's sent to the blast
+            # list so it must appear near the top
+            return DiveEmailTypes.Spotlight
         elif "Welcome Series" in labels or \
                 ("Welcome" in list_name and " days " in name.lower()):
             return DiveEmailTypes.WelcomeSeries
         elif "Dive-iversary" in subject or "Dive-iversary" in list_name:
             return DiveEmailTypes.Audience
-        elif "update profile" in list_name:
+        elif "update profile" in list_name.lower():
             return DiveEmailTypes.Audience
         elif "linkedin" in list_name.lower() and "linkedin" in name.lower():
             return DiveEmailTypes.Audience
-        elif "spotlight-newsletter" in labels:
-            # Note that spotlight's name also starts with "Issue: " so this check must
-            # appear before thaat one
-            return DiveEmailTypes.Spotlight
         elif subject.startswith("BREAKING") or "Breaking" in labels:
             return DiveEmailTypes.BreakingNews
         elif list_name.endswith("Weekender") or \
@@ -121,6 +118,9 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
             return DiveEmailTypes.Newsletter
         elif list_name == "Supply Chain Dive: Operations" and "Issue" in name:
             return DiveEmailTypes.Newsletter
+        elif "Blast" in labels or '-blast-' in name or \
+                list_name.lower().endswith("blast list"):
+            return DiveEmailTypes.Blast
         else:
             return DiveEmailTypes.Unknown
 
