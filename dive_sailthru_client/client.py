@@ -94,7 +94,7 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
         labels = campaign.get('labels', [])
         name = campaign.get('name', '')
         list_name = campaign.get('list', '')
-        subject = campaign.get('subject', '').encode('utf-8', errors='replace')
+        subject = campaign.get('subject', '').encode('utf-8', errors='replace').decode('ascii', 'replace')
         # WARNING! Order matters below
         if "Blast" in labels or '-blast-' in name:
             return DiveEmailTypes.Blast
