@@ -27,6 +27,7 @@ class DiveEmailTypes:
     Unknown = "unknown"
     BreakingNews = "breaking"
     Spotlight = "spotlight"
+    Audience = "audience"  # e.g. Dive-iversary, "Update your profile"
 
 
 # There is some skullduggery below in order to override the hardcoded 10 second timeout on HTTP requests
@@ -93,28 +94,35 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
         labels = campaign.get('labels', [])
         name = campaign.get('name', '')
         list_name = campaign.get('list', '')
-        subject = campaign.get('subject', '').encode('utf-8', errors='replace')
-        if "Blast" in labels or '-blast-' in name:
-            return DiveEmailTypes.Blast
-        if "Welcome Series" in labels:
-            return DiveEmailTypes.WelcomeSeries
+        subject = campaign.get('subject', '').encode('utf-8', errors='replace').decode('ascii', 'replace')
         # WARNING! Order matters below
-        # DiveEmailTypes.Spotlight check must be above DiveEmailTypes.Newsletter check
-        # as that would also be valid
-        # since a spotlight's name property also starts with "Issue: "
         if "spotlight-newsletter" in labels:
+            # Note that spotlight's name also starts with "Issue: " and it's sent to the blast
+            # list so it must appear near the top
             return DiveEmailTypes.Spotlight
-        if list_name.endswith("Weekender") or \
+        elif "Welcome Series" in labels or \
+                ("Welcome" in list_name and " days " in name.lower()):
+            return DiveEmailTypes.WelcomeSeries
+        elif "Dive-iversary" in subject or "Dive-iversary" in list_name:
+            return DiveEmailTypes.Audience
+        elif "update profile" in list_name.lower():
+            return DiveEmailTypes.Audience
+        elif "linkedin" in list_name.lower() and "linkedin" in name.lower():
+            return DiveEmailTypes.Audience
+        elif subject.startswith("BREAKING") or "Breaking" in labels:
+            return DiveEmailTypes.BreakingNews
+        elif list_name.endswith("Weekender") or \
                 name.startswith("Newsletter Weekly Roundup"):
             return DiveEmailTypes.Weekender
-        if "newsletter" in labels or name.startswith("Issue: "):
+        elif "newsletter" in labels or name.startswith("Issue: "):
             return DiveEmailTypes.Newsletter
-        if list_name.lower().endswith("blast list"):
+        elif list_name == "Supply Chain Dive: Operations" and "Issue" in name:
+            return DiveEmailTypes.Newsletter
+        elif "Blast" in labels or '-blast-' in name or \
+                list_name.lower().endswith("blast list"):
             return DiveEmailTypes.Blast
-        if subject.startswith(b"BREAKING"):
-            return DiveEmailTypes.BreakingNews
-
-        return DiveEmailTypes.Unknown
+        else:
+            return DiveEmailTypes.Unknown
 
     def _infer_dive_publication(self, campaign):
         """
