@@ -109,18 +109,20 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
             return DiveEmailTypes.Audience
         elif "linkedin" in list_name.lower() and "linkedin" in name.lower():
             return DiveEmailTypes.Audience
+        elif "sepa upload" in list_name.lower() or "simple k12" in list_name.lower() or "esna list" in list_name.lower():
+            return DiveEmailTypes.Audience
         elif subject.startswith("BREAKING") or "Breaking" in labels:
             return DiveEmailTypes.BreakingNews
-        elif list_name.endswith("Weekender") or \
+        elif (list_name.endswith("Weekender") and (not "+" in list_name)) or \
                 name.startswith("Newsletter Weekly Roundup"):
             return DiveEmailTypes.Weekender
-        elif "newsletter" in labels or name.startswith("Issue: "):
-            return DiveEmailTypes.Newsletter
-        elif list_name == "Supply Chain Dive: Operations" and "Issue" in name:
+        elif list_name == "Supply Chain Dive: Operations" and ("Issue" in name or "SCD: Ops v2" in name):
             return DiveEmailTypes.Newsletter
         elif "Blast" in labels or '-blast-' in name or \
                 list_name.lower().endswith("blast list"):
             return DiveEmailTypes.Blast
+        elif "newsletter" in labels or name.startswith("Issue: "):
+            return DiveEmailTypes.Newsletter
         else:
             return DiveEmailTypes.Unknown
 
