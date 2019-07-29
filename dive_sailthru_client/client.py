@@ -113,7 +113,7 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
             return DiveEmailTypes.Audience
         elif subject.startswith("BREAKING") or "Breaking" in labels:
             return DiveEmailTypes.BreakingNews
-        elif (list_name.endswith("Weekender") and (not "+" in list_name)) or \
+        elif (list_name.endswith("Weekender") and ("+" not in list_name)) or \
                 name.startswith("Newsletter Weekly Roundup"):
             return DiveEmailTypes.Weekender
         elif list_name == "Supply Chain Dive: Operations" and ("Issue" in name or "SCD: Ops v2" in name):
