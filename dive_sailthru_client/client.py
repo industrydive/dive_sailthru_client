@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from sailthru import sailthru_client
 from .errors import SailthruApiError, SailthruUserEmailError
 # We need the SailthruClientError to be able to handle retries in api_get
@@ -11,6 +12,7 @@ import platform
 import datetime
 import time
 import re
+from six.moves import range
 
 # TODO: enforce structure on returned dicts -- make all keys present even if
 # value is zero. Maybe replace with class.
@@ -136,7 +138,7 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
 
         # This function requires a dive_email_type, so if 'dive_email_type' is already a key
         # in the campaign than use it, otherwise call it here.
-        if 'dive_email_type' in campaign.keys():
+        if 'dive_email_type' in list(campaign.keys()):
             dive_email_type = campaign['dive_email_type']
         else:
             dive_email_type = self._infer_dive_email_type(campaign)
@@ -160,7 +162,7 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
         """
         if not response.is_ok():
             api_error = response.get_error()
-            if api_error.code in SailthruUserEmailError.USER_EMAIL_ERROR_CODES.keys():
+            if api_error.code in list(SailthruUserEmailError.USER_EMAIL_ERROR_CODES.keys()):
                 raise SailthruUserEmailError(
                     '%s (%s)' % (api_error.message, api_error.code)
                 )
