@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from unittest import TestCase
 from dive_sailthru_client.client import DiveSailthruClient, DiveEmailTypes
 from dive_sailthru_client.errors import SailthruApiError, SailthruUserEmailError
@@ -175,13 +176,13 @@ class TestDiveSailthruClient(TestCase):
 
         for test_case in test_cases:
             # test email type is correct
-            if 'expected_type' in test_case.keys():
+            if 'expected_type' in list(test_case.keys()):
                 actual_email_type = self.sailthru_client._infer_dive_email_type(test_case['input'])
                 msg = "dive_email_type '%s' != '%s' while testing '%s'" % \
                       (actual_email_type, test_case['expected_type'], test_case['comment'])
                 self.assertEqual(actual_email_type, test_case['expected_type'], msg)
             # test publication is correct
-            if 'expected_publication' in test_case.keys():
+            if 'expected_publication' in list(test_case.keys()):
                 actual_brand = self.sailthru_client._infer_dive_publication(test_case['input'])
                 msg = "dive_brand key was '%s' != '%s' while testing '%s'" % \
                       (actual_brand, test_case['expected_publication'], test_case['comment'])

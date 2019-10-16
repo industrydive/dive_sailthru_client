@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from sailthru import sailthru_client
 from .errors import SailthruApiError, SailthruUserEmailError
 # We need the SailthruClientError to be able to handle retries in api_get
@@ -11,6 +12,7 @@ import platform
 import datetime
 import time
 import re
+import six.moves
 
 # TODO: enforce structure on returned dicts -- make all keys present even if
 # value is zero. Maybe replace with class.
@@ -136,7 +138,7 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
 
         # This function requires a dive_email_type, so if 'dive_email_type' is already a key
         # in the campaign than use it, otherwise call it here.
-        if 'dive_email_type' in campaign.keys():
+        if 'dive_email_type' in list(campaign.keys()):
             dive_email_type = campaign['dive_email_type']
         else:
             dive_email_type = self._infer_dive_email_type(campaign)
@@ -160,7 +162,7 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
         """
         if not response.is_ok():
             api_error = response.get_error()
-            if api_error.code in SailthruUserEmailError.USER_EMAIL_ERROR_CODES.keys():
+            if api_error.code in list(SailthruUserEmailError.USER_EMAIL_ERROR_CODES.keys()):
                 raise SailthruUserEmailError(
                     '%s (%s)' % (api_error.message, api_error.code)
                 )
@@ -484,7 +486,7 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
     def _block_until_job_complete(self, job_id, seconds_between_checks=1, max_wait_seconds=21600):
         """ returns result of the job; raises exception if job not complete in max_wait_seconds """
         max_iterations = int(max_wait_seconds / seconds_between_checks) + 1
-        for _ in range(max_iterations):
+        for _ in six.moves.range(max_iterations):
             job_result_json = self.get_job_info(job_id)
             if job_result_json['status'] != 'pending':
                 # It's either complete or something went wrong, so stop checking
@@ -516,7 +518,7 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
         these timeout errors in the wild in some small percentage of stats_blast API
         calls. (See TECH-1736)
         """
-        for _ in range(3):
+        for _ in six.moves.range(3):
             try:
                 response = super(DiveSailthruClient, self).api_get(*args, **kwargs)
                 break

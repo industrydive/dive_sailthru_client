@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from setuptools import setup
 
 setup(
@@ -12,6 +13,7 @@ setup(
     packages=['dive_sailthru_client'],
     install_requires=[
         'sailthru-client==2.3.3',
+        'six==1.12.0'
         # Note that sailthru-client installs requests and simplejson
     ],
     test_suite='nose.collector',
