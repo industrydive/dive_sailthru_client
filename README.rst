@@ -10,8 +10,9 @@ Alternative for running tests
 If you have issues using the make command for running tests,
 first set the environment variables in the command line with the following command:
 
-export SAILTHRU_API_KEY="place key for dev account here"
+export SAILTHRU_API_KEY="place key for dev account here"\n
 export SAILTHRU_API_SECRET="place secret for dev account here"
+
 then run the following command to execute the tests:
 
 python setup.py test
