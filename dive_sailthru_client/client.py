@@ -83,7 +83,7 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
         """
         return self.api_get('list', {"primary": 1}).json['lists']
 
-    def _infer_dive_email_type(self, campaign):
+    def _infer_dive_email_type(self, campaign):   # noqa: C901 - yeah it's complicated, I'm not proud!
         """
         Industry Dive specific function to try to figure out how to
         categorize a given campaign/blast in terms we understand.
@@ -149,7 +149,8 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
             dive_email_type = self._infer_dive_email_type(campaign)
 
         list_name = campaign.get('list', '')
-        if (dive_email_type in [DiveEmailTypes.Blast, DiveEmailTypes.HalfBlast, DiveEmailTypes.Spotlight]) and list_name.lower().endswith("blast list"):
+        if (dive_email_type in [DiveEmailTypes.Blast, DiveEmailTypes.HalfBlast, DiveEmailTypes.Spotlight]) and \
+           list_name.lower().endswith("blast list"):
             # The Utility Dive Spotlight goes out to a special
             # blast list: "Utility Dive and sub pubs Blast List"
             # This regex handles that as well as normal blast lists
