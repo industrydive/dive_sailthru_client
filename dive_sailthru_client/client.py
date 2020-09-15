@@ -23,6 +23,7 @@ class DiveEmailTypes:
     Provides standard email types we use.
     """
     Blast = "blast"
+    HalfBlast = "halfblast"
     WelcomeSeries = "welcome"
     Newsletter = "newsletter"
     Weekender = "weekender"
@@ -120,9 +121,11 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
             return DiveEmailTypes.Weekender
         elif list_name == "Supply Chain Dive: Operations" and ("Issue" in name or "SCD: Ops v2" in name):
             return DiveEmailTypes.Newsletter
-        elif "Blast" in labels or '-blast-' in name or \
-                list_name.lower().endswith("blast list"):
-            return DiveEmailTypes.Blast
+        elif "Blast" in labels or '-blast-' in name or list_name.lower().endswith("blast list"):
+            if "HalfBlast" in name or list_name.endswith(' - Group A') or list_name.endswith(' - Group B'):
+                return DiveEmailTypes.HalfBlast
+            else:
+                return DiveEmailTypes.Blast
         elif "newsletter" in labels or name.startswith("Issue: "):
             return DiveEmailTypes.Newsletter
         else:
@@ -146,11 +149,13 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
             dive_email_type = self._infer_dive_email_type(campaign)
 
         list_name = campaign.get('list', '')
-        if (dive_email_type in [DiveEmailTypes.Blast, DiveEmailTypes.Spotlight]) and list_name.lower().endswith("blast list"):
+        if (dive_email_type in [DiveEmailTypes.Blast, DiveEmailTypes.HalfBlast, DiveEmailTypes.Spotlight]) and list_name.lower().endswith("blast list"):
             # The Utility Dive Spotlight goes out to a special
             # blast list: "Utility Dive and sub pubs Blast List"
             # This regex handles that as well as normal blast lists
             return re.sub(r'( and sub pubs)? [Bb]last [Ll]ist$', '', list_name)
+        if dive_email_type == DiveEmailTypes.HalfBlast and "Group" in list_name:
+            return re.sub(r' Blast List - Group [AB]$', '', list_name, flags=re.I)
         if dive_email_type == DiveEmailTypes.Weekender and list_name.lower().endswith("weekender"):
             return re.sub(r' [Ww]eekender$', '', list_name)
         if dive_email_type == DiveEmailTypes.Newsletter:

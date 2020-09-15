@@ -169,8 +169,26 @@ class TestDiveSailthruClient(TestCase):
                 'expected_publication': 'Education Dive: K12',
                 'expected_type': DiveEmailTypes.Spotlight,
                 'comment': 'Education K12 spotlight',
+            },
+            {
+                "input": {
+                    'blast_id': 20694038,
+                    'email_count': 41445,
+                    'labels': ["Blast"],
+                    "list": "HR Dive Blast List - Group B", 
+                    "modify_time": "Thu, 25 Jun 2020 08:48:11 -0400", 
+                    'name': "InStride-0060L00000spHSF-blast-HR-June25", 
+                    'public_url': "link.divenewsletter.com/public/20694038", 
+                    "schedule_time": "Thu, 25 Jun 2020 08:50:00 -0400", 
+                    "start_time": "Thu, 25 Jun 2020 08:50:03 -0400", 
+                    'status': 'sent',
+                    "subject": "[Webinar] Tackling the Skills Gap: Why Quality Education Matters", 
 
-            }
+                },
+                'expected_publication': 'HR Dive',
+                'expected_type': DiveEmailTypes.HalfBlast,
+                'comment': 'HR Dive Half Blast',
+            },
             # TODO: add tests for Breaking news
         ]
 
