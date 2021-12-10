@@ -14,3 +14,4 @@ build/
 .coverage
 .tox
 .eggs/
+.idea

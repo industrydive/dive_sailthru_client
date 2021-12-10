@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="dive_sailthru_client",
-    version="0.0.23",
+    version="0.0.24",
     description="Industry Dive abstraction of the Sailthru API client",
     author='Industry Dive',
     author_email='tech.team@industrydive.com',
@@ -12,7 +12,7 @@ setup(
     zip_safe=False,
     packages=['dive_sailthru_client'],
     install_requires=[
-        'sailthru-client==2.3.3',
+        'sailthru-client>=2.3.5<2.4',
         'six~=1.12'
         # Note that sailthru-client installs requests and simplejson
     ],
