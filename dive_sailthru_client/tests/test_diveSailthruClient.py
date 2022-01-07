@@ -189,7 +189,32 @@ class TestDiveSailthruClient(TestCase):
                 'expected_type': DiveEmailTypes.HalfBlast,
                 'comment': 'HR Dive Half Blast',
             },
-            # TODO: add tests for Breaking news
+            {
+                'input': {
+                    "blast_id": 25987691,
+                    "name": "Pagero-0064W00000yYmXL-blast-CFO-Dec18",
+                    "suppress_list": [],
+                    "from_name": "CFO Dive",
+                    "subject": "A CFO's guide on invoice automation",
+                    "list": "CFO Dive Thirds Blast List - Group C",
+                    "list_id": "60f1b0d6fb306d352d7a7dd1",
+                    "email_count": 30258,
+                    "start_time": "Sat, 18 Dec 2021 09:00:03 -0500",
+                    "stop_time": "Sat, 18 Dec 2021 09:02:46 -0500",
+                    "schedule_time": "Sat, 18 Dec 2021 09:00:00 -0500",
+                    "schedule_type": "specific",
+                    "status": "sent",
+                    "public_url": "link.divenewsletter.com/public/25987691",
+                    "labels": [
+                        "Blast"
+                    ],
+
+                },
+                'expected_publication': 'CFO Dive',
+                'expected_type': DiveEmailTypes.ThirdBlast,
+                'comment': 'CFO Dive third blast',
+            },            
+            # You can pull the data for these tests from sailthru_tools scripts/get_campaign.py
         ]
 
         for test_case in test_cases:
@@ -211,24 +236,27 @@ class TestDiveSailthruClient(TestCase):
         Test that we can guess the dive email type from the mailing.
         :return:
         """
-        # TODO: reorganize this test to match the style of test__infer_dive_brand
-        inputs = [
+        test_cases = [
             {
                 'blast_id': 4889393,
                 'labels': ['Blast'],
                 'list': 'Utility Dive: Solar blast list',
                 'name': 'ABB Survey recruitment-blast-UD Solar-Aug6',
-                'subject': 'Utilities: Is your grid secure?'
+                'subject': 'Utilities: Is your grid secure?',
+                'expected_type': DiveEmailTypes.Blast,
             },
             {
                 'blast_id': 12345,
-                'labels': ['Welcome Series', 'Fake label', ]
+                'labels': ['Welcome Series', 'Fake label', ],
+                'expected_type': DiveEmailTypes.WelcomeSeries,
             },
             {
-                'labels': ['newsletter', 'fake label', ]
+                'labels': ['newsletter', 'fake label', ],
+                'expected_type': DiveEmailTypes.Newsletter,
             },
             {
                 'list': 'This is the Weekender',
+                'expected_type': DiveEmailTypes.Weekender,
             },
             {
                 'blast_id': 12345,
@@ -238,25 +266,18 @@ class TestDiveSailthruClient(TestCase):
                     'not a newsletter',
                     'not BREAKING',
                     'NOT A WEEKENDER'
-                ]
+                ],
+                'expected_type': DiveEmailTypes.Unknown,
             },
             {
-                'subject': 'BREAKING the law'
+                'subject': 'BREAKING the law',
+                'expected_type': DiveEmailTypes.BreakingNews
             }
         ]
 
-        expected = [
-            DiveEmailTypes.Blast,
-            DiveEmailTypes.WelcomeSeries,
-            DiveEmailTypes.Newsletter,
-            DiveEmailTypes.Weekender,
-            DiveEmailTypes.Unknown,
-            DiveEmailTypes.BreakingNews
-        ]
-
-        for index, input in enumerate(inputs):
-            output = self.sailthru_client._infer_dive_email_type(input)
-            self.assertEqual(output, expected[index])
+        for test_case in test_cases:
+            output = self.sailthru_client._infer_dive_email_type(test_case)
+            self.assertEqual(output, test_case['expected_type'])
 
     def test__infer_dive_publication(self):
         test_campaigns = [
@@ -340,38 +361,3 @@ class TestDiveSailthruClient(TestCase):
                 mock_error.code = code
                 mock_error.message = message
                 self.sailthru_client.raise_exception_if_error(mock_response)
-
-    @patch('dive_sailthru_client.client.DiveSailthruClient')
-    @patch('sailthru.sailthru_response.SailthruResponse')
-    def test_get_campaigns_in_range(self, mock_response, mock_client):
-        # TODO
-        # mock_response.is_ok.return_value = True
-        # mock_response.json.return_value = {
-        #     'blasts': [
-        #         {
-        #             'subject': 'this is a blast'
-        #         }
-        #     ]
-        # }
-        #
-        # mock_client._infer_dive_brand_email_type.return_value = 'the type'
-        # mock_client._infer_dive_publication.return_value = 'the publication'
-        # mock_client.api_get.return_value = mock_response
-        #
-        # from datetime import datetime, timedelta
-        # campaigns = mock_client.get_campaigns_in_range(datetime.now(), datetime.now() + timedelta(1))
-        #
-        # self.assertEqual(campaigns[0].subject, 'this is a blast')
-        # self.assertEqual(campaigns[0].dive_email_type, 'the type')
-        # self.assertEqual(campaigns[0].dive_brand, 'the publication')
-
-        # self.fail()
-        pass
-
-    def test_get_campaign_stats(self):
-        # self.fail()
-        pass
-
-    def test_get_campaign_data(self):
-        # self.fail()
-        pass

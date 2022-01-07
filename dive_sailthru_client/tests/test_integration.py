@@ -86,3 +86,9 @@ class TestDiveSailthruClientExternalIntegration(TestCase):
         # now check if it really updated
         test_updated_var = self._get_user_var(self.test_email, self.test_var_key)
         self.assertEqual(test_updated_var, updated_value)
+
+    def test_get_campaigns_in_range(self):
+        campaigns = self.sailthru_client.get_campaigns_in_range(datetime.date(2021, 12, 10), datetime.date(2021, 12, 11))
+        self.assertEqual(len(campaigns), 1)
+        campaign = campaigns[0]
+        self.assertEqual(campaign['name'], 'Unicode Test ⛵')

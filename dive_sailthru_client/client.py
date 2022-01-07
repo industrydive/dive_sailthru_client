@@ -1,13 +1,8 @@
 from __future__ import absolute_import
-from sailthru import sailthru_client
+from sailthru.sailthru_client import SailthruClient
 from .errors import SailthruApiError, SailthruUserEmailError
 # We need the SailthruClientError to be able to handle retries in api_get
 from sailthru.sailthru_error import SailthruClientError
-# for patched_sailthru_http_request
-from sailthru.sailthru_response import SailthruResponse
-from sailthru.sailthru_http import flatten_nested_hash
-import requests
-import platform
 # other libraries
 import datetime
 import time
@@ -24,6 +19,8 @@ class DiveEmailTypes:
     """
     Blast = "blast"
     HalfBlast = "halfblast"
+    ThirdBlast = "thirdblast"
+    QuarterBlast = "quarterblast"
     WelcomeSeries = "welcome"
     Newsletter = "newsletter"
     Weekender = "weekender"
@@ -33,46 +30,17 @@ class DiveEmailTypes:
     Audience = "audience"  # e.g. Dive-iversary, "Update your profile"
 
 
-# There is some skullduggery below in order to override the hardcoded 10 second timeout on HTTP requests
-# per TECH-3849. First we copy/paste the sailthru_http_request() function that originally exists here:
-# https://github.com/sailthru/sailthru-python-client/blob/521fdaa30890a29da8fbb02726e7d22ed174b878/sailthru/sailthru_http.py#L30
-# Then we modify it to have a default timeout of 60 seconds and additionally to accept a timeout parameter
-def timeout_patched_sailthru_http_request(url, data, method, file_data=None, timeout=60):
-    """
-    Perform an HTTP GET / POST / DELETE request
-
-    This is a override of upstream sailthru_http_request with `timeout` added as a parameter and
-    with the default set to 60 instead of 10.
-    """
-    data = flatten_nested_hash(data)
-    method = method.upper()
-    params, data = (None, data) if method == 'POST' else (data, None)
-
-    try:
-        headers = {'User-Agent': 'Sailthru API Python Client %s; Python Version: %s' % ('2.3.3-patched', platform.python_version())}
-        response = requests.request(method, url, params=params, data=data, files=file_data, headers=headers, timeout=timeout)
-        return SailthruResponse(response)
-    except requests.HTTPError as e:
-        raise SailthruClientError(str(e))
-    except requests.RequestException as e:
-        raise SailthruClientError(str(e))
-
-
-# Now we need to patch the altered sailthru_http_request into a place where even functions defined in the upstream
-# SailthruClient class that call it will call our new altered version. In the upstream class, the sailthru_http_request()
-# function is `import`ed into the sailthru_client module (not the class), so we need to import the sailthru_client module
-# and then redefine the sailthru_http_request that it had imported to instead point to our version. Then later we
-# have to make sure we are subclassing SailthruClient by refering to it specifically as sailthru_client.SailthruClient
-sailthru_client.sailthru_http_request = timeout_patched_sailthru_http_request
-
-
-class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sailthru_client.SailthruClient for patched HTTP timeout
+class DiveSailthruClient(SailthruClient):
     """
     Our Sailthru client implementation that adds our own concepts.
 
     This includes dive publication (misnamed as key dive_brand), dive email type,
     and easier ways to query campaigns.
     """
+
+    def __init__(self, api_key, secret, api_url=None, request_timeout=60):
+        """ override init to set default request_timeout to a more reasonable 60 seconds """
+        super(DiveSailthruClient, self).__init__(api_key, secret, api_url, request_timeout)
 
     def get_primary_lists(self):
         """
@@ -122,7 +90,13 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
         elif list_name == "Supply Chain Dive: Operations" and ("Issue" in name or "SCD: Ops v2" in name):
             return DiveEmailTypes.Newsletter
         elif "Blast" in labels or '-blast-' in name or list_name.lower().endswith("blast list"):
-            if "HalfBlast" in name or list_name.endswith(' - Group A') or list_name.endswith(' - Group B'):
+            if "QuarterBlast" in name or "Quarters Blast List" in list_name or "Quarter Blast List" in list_name:
+                return DiveEmailTypes.QuarterBlast
+            elif "ThirdBlast" in name or "Thirds Blast List" in list_name or "Third Blast List" in list_name:
+                return DiveEmailTypes.ThirdBlast
+            elif "HalfBlast" in name or "Half Blast List" in list_name \
+                or list_name.endswith(' - Group A') or list_name.endswith(' - Group B'):
+                # Put this last to catch any legacy split blast lists that may not have "Half" in name
                 return DiveEmailTypes.HalfBlast
             else:
                 return DiveEmailTypes.Blast
@@ -155,8 +129,8 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
             # blast list: "Utility Dive and sub pubs Blast List"
             # This regex handles that as well as normal blast lists
             return re.sub(r'( and sub pubs)? [Bb]last [Ll]ist$', '', list_name)
-        if dive_email_type == DiveEmailTypes.HalfBlast and "Group" in list_name:
-            return re.sub(r' Blast List - Group [AB]$', '', list_name, flags=re.I)
+        if dive_email_type in (DiveEmailTypes.HalfBlast, DiveEmailTypes.QuarterBlast, DiveEmailTypes.ThirdBlast) and "Group" in list_name:
+            return re.sub(r'( (Half|Thirds?|Quarters?))? Blast List - Group [A-D]$', '', list_name, flags=re.I)
         if dive_email_type == DiveEmailTypes.Weekender and list_name.lower().endswith("weekender"):
             return re.sub(r' [Ww]eekender$', '', list_name)
         if dive_email_type == DiveEmailTypes.Newsletter:
@@ -263,10 +237,6 @@ class DiveSailthruClient(sailthru_client.SailthruClient):  # must import from sa
                 c['dive_email_type'] = self._infer_dive_email_type(c)
                 # technically below gets the pub, but keeping key `dive_brand` for backwards compatability
                 c['dive_brand'] = self._infer_dive_publication(c)
-                # Automatically "fix" unicode problems.
-                # TODO: Not sure this is right.
-                c['name'] = c['name'].encode('utf-8', errors='replace')
-                c['subject'] = c['subject'].encode('utf-8', errors='replace')
                 campaigns.append(c)
 
             page_start_date = page_end_date
