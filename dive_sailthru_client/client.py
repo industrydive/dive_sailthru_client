@@ -40,7 +40,7 @@ class DiveSailthruClient(SailthruClient):
 
     def __init__(self, api_key, secret, api_url=None, request_timeout=60):
         """ override init to set default request_timeout to a more reasonable 60 seconds """
-        super(DiveSailthruClient, self).__init__(api_key, secret, api_url, request_timeout)
+        super().__init__(api_key, secret, api_url, request_timeout)
 
     def get_primary_lists(self):
         """
