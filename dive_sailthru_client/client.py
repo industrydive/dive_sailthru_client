@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from sailthru.sailthru_client import SailthruClient
+from sailthru import sailthru_client
 from .errors import SailthruApiError, SailthruUserEmailError
 # We need the SailthruClientError to be able to handle retries in api_get
 from sailthru.sailthru_error import SailthruClientError
@@ -30,7 +30,7 @@ class DiveEmailTypes:
     Audience = "audience"  # e.g. Dive-iversary, "Update your profile"
 
 
-class DiveSailthruClient(SailthruClient):
+class DiveSailthruClient(sailthru_client.SailthruClient):
     """
     Our Sailthru client implementation that adds our own concepts.
 
