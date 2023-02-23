@@ -12,7 +12,7 @@ setup(
     zip_safe=False,
     packages=['dive_sailthru_client'],
     install_requires=[
-        'sailthru-client>=2.3.5<2.4',
+        'sailthru-client>=2.3.5,<2.4',
         'six~=1.12'
         # Note that sailthru-client installs requests and simplejson
     ],
