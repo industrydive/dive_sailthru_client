@@ -89,7 +89,7 @@ class DiveSailthruClient(SailthruClient):
             return DiveEmailTypes.Weekender
         elif list_name == "Supply Chain Dive: Operations" and ("Issue" in name or "SCD: Ops v2" in name):
             return DiveEmailTypes.Newsletter
-        elif "Blast" in labels or '-blast-' in name or "blast list" in list_name.lower():
+        elif "Blast" in labels or '-blast-' in name or "blast=" in name or "blast list" in list_name.lower():
             if "QuarterBlast" in name or "Quarters Blast List" in list_name or "Quarter Blast List" in list_name:
                 return DiveEmailTypes.QuarterBlast
             elif "ThirdBlast" in name or "Thirds Blast List" in list_name or "Third Blast List" in list_name:
