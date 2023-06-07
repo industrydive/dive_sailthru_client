@@ -213,7 +213,29 @@ class TestDiveSailthruClient(TestCase):
                 'expected_publication': 'CFO Dive',
                 'expected_type': DiveEmailTypes.ThirdBlast,
                 'comment': 'CFO Dive third blast',
-            },            
+            },
+            {
+                'input': {
+                    'blast_id': 31437039,
+                    'email_count': 54245,
+                    'labels': [],
+                    'list': 'Marketing Dive Quarter Blast List - Group B',
+                    'mode': 'email',
+                    'modify_time': 'Tue, 23 May 2023 09:20:43 -0400',
+                    'modify_user': 'xxx@industrydive.com',
+                    'name': 'client_name=Salesforce.com&pt_id=a12K50000005y8oIAA&blast=quarterblast&site=MarketingDive&send_date=05.23.2023',
+                    'public_url': 'link.divenewsletter.com/public/31437039',
+                    'schedule_time': 'Tue, 23 May 2023 09:27:00 -0400',
+                    'sent_count': 54245,
+                    'start_time': 'Tue, 23 May 2023 09:27:01 -0400',
+                    'status': 'sent',
+                    'subject': 'See how personalized marketing can lift loyalty and raise ROI',
+                    'suppress_list': []
+                },
+                'expected_publication': 'Marketing Dive',
+                'expected_type': DiveEmailTypes.QuarterBlast,
+                'comment': 'Marketing Dive Quarter Blast with param-type blast name',
+            },
             # You can pull the data for these tests from sailthru_tools scripts/get_campaign.py
         ]
 
