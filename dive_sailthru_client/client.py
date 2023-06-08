@@ -95,7 +95,7 @@ class DiveSailthruClient(SailthruClient):
             elif "ThirdBlast" in name or "Thirds Blast List" in list_name or "Third Blast List" in list_name:
                 return DiveEmailTypes.ThirdBlast
             elif "HalfBlast" in name or "Half Blast List" in list_name \
-                or list_name.endswith(' - Group A') or list_name.endswith(' - Group B'):
+                     or list_name.endswith(' - Group A') or list_name.endswith(' - Group B'):
                 # Put this last to catch any legacy split blast lists that may not have "Half" in name
                 return DiveEmailTypes.HalfBlast
             else:
