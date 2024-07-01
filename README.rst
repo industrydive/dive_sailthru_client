@@ -23,4 +23,5 @@ python setup.py test
 
 Changelog
 -----------------------------
+v0.0.26 - added TwoThirdBlast email type
 v0.0.23 - added HalfBlast email type
