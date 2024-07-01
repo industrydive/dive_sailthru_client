@@ -18,6 +18,7 @@ class DiveEmailTypes:
     Provides standard email types we use.
     """
     Blast = "blast"
+    TwoThirdBlast = "twothirdblast"
     HalfBlast = "halfblast"
     ThirdBlast = "thirdblast"
     QuarterBlast = "quarterblast"
@@ -92,6 +93,9 @@ class DiveSailthruClient(SailthruClient):
         elif "Blast" in labels or '-blast-' in name or "blast=" in name or "blast list" in list_name.lower():
             if "QuarterBlast" in name or "Quarters Blast List" in list_name or "Quarter Blast List" in list_name:
                 return DiveEmailTypes.QuarterBlast
+            elif "twothirdblast" in name or "two thirds blast list" in list_name.lower() or "two third blast list" in list_name.lower():
+                # Must go before standard third blast
+                return DiveEmailTypes.TwoThirdBlast
             elif "ThirdBlast" in name or "Thirds Blast List" in list_name or "Third Blast List" in list_name:
                 return DiveEmailTypes.ThirdBlast
             elif "HalfBlast" in name or "Half Blast List" in list_name \
@@ -116,7 +120,7 @@ class DiveSailthruClient(SailthruClient):
         """
 
         # This function requires a dive_email_type, so if 'dive_email_type' is already a key
-        # in the campaign than use it, otherwise call it here.
+        # in the campaign then use it, otherwise call it here.
         if 'dive_email_type' in list(campaign.keys()):
             dive_email_type = campaign['dive_email_type']
         else:
@@ -129,8 +133,9 @@ class DiveSailthruClient(SailthruClient):
             # blast list: "Utility Dive and sub pubs Blast List"
             # This regex handles that as well as normal blast lists
             return re.sub(r'( and sub pubs)? [Bb]last [Ll]ist$', '', list_name)
-        if dive_email_type in (DiveEmailTypes.HalfBlast, DiveEmailTypes.QuarterBlast, DiveEmailTypes.ThirdBlast) and "Group" in list_name:
-            return re.sub(r'( (Half|Thirds?|Quarters?))? Blast List - Group [A-D]$', '', list_name, flags=re.I)
+        if (dive_email_type in (DiveEmailTypes.HalfBlast, DiveEmailTypes.QuarterBlast, DiveEmailTypes.ThirdBlast, DiveEmailTypes.TwoThirdBlast) and
+            "Group" in list_name):
+            return re.sub(r'( (Half|(TWO )?Thirds?|Quarters?))? Blast List - Group [A-D]$', '', list_name, flags=re.I)
         if dive_email_type == DiveEmailTypes.Weekender and list_name.lower().endswith("weekender"):
             return re.sub(r' [Ww]eekender$', '', list_name)
         if dive_email_type == DiveEmailTypes.Newsletter:
