@@ -236,6 +236,45 @@ class TestDiveSailthruClient(TestCase):
                 'expected_type': DiveEmailTypes.QuarterBlast,
                 'comment': 'Marketing Dive Quarter Blast with param-type blast name',
             },
+            {
+                'input': {
+                    'blast_id' : 35893250,
+                    'email_count': 57400,
+                    'labels' : ['Blast'],
+                    'list' : 'Healthcare Dive TWO Third Blast List - Group B',
+                    'mode': 'email',
+                    'modify_time' : 'Mon, 01 Jul 2024 10:20:29 -0400',
+                    'modify_user' : 'xxx@industrydive.com',
+                    'name': 'client_name=CorroHealth&pt_id=a12PE000000L2bnYAC&blast=twothirdblast&site=HealthcareDive&send_date=07.09.2024',
+                    'from_name' : 'Healthcare Dive',
+                    'status' : 'created',
+                    'subject' : 'Boost Hospital Revenue 7X with AI',
+                    'suppress_list' : [],
+                },
+                'expected_publication': 'Healthcare Dive',
+                'expected_type': DiveEmailTypes.TwoThirdBlast,
+                'comment': 'Healthcare Dive Two Third Blast with param-type blast name',
+            },
+            {
+                'input': {
+                    'blast_id' : 35893250,
+                    'email_count': 57400,
+                    'labels' : ['Blast'],
+                    'list' : 'Healthcare Dive TWO Third Blast List - Group B',
+                    'mode': 'email',
+                    'modify_time' : 'Mon, 01 Jul 2024 10:20:29 -0400',
+                    'modify_user' : 'xxx@industrydive.com',
+                    # Intentionally editing 'name' blast param to test inference from 'list' value
+                    'name': 'client_name=CorroHealth&pt_id=a12PE000000L2bnYAC&blast=incorrectblastparam&site=HealthcareDive&send_date=07.09.2024',
+                    'from_name' : 'Healthcare Dive',
+                    'status' : 'created',
+                    'subject' : 'Boost Hospital Revenue 7X with AI',
+                    'suppress_list' : [],
+                },
+                'expected_publication': 'Healthcare Dive',
+                'expected_type': DiveEmailTypes.TwoThirdBlast,
+                'comment': 'Healthcare Dive Two Third Blast with expected list name',
+            },
             # You can pull the data for these tests from sailthru_tools scripts/get_campaign.py
         ]
 
